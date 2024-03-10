@@ -1,10 +1,10 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
 from django.contrib.auth import login, logout, authenticate
 from django.db import IntegrityError
+from .models import Movie, Genre
 
-# Create your views here.
 def home(request):
     return render(request, 'home.html')
 
@@ -33,7 +33,24 @@ def signup(request):
             })
               
 def movies(request):
-    return render(request, 'movies.html')
+    filter_params = {}
+
+    genre_name = request.GET.get('genre')
+    if genre_name and genre_name != 'none':
+        filter_params['genres__name'] = genre_name
+
+    director_name = request.GET.get('director')
+    if director_name:
+        filter_params['director__icontains'] = director_name
+
+    movies = Movie.objects.filter(**filter_params)
+    genres = Genre.objects.all()
+
+    return render(request, 'movies.html', {'movies': movies, 'genres': genres})
+
+def movie_detail(request, movie_id):
+    movie = get_object_or_404(Movie, pk=movie_id)
+    return render(request, 'movie_detail.html', {'movie': movie})
 
 def signout(request):
     logout(request)

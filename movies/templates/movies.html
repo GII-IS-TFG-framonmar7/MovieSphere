@@ -2,7 +2,42 @@
 
 {% block content %}
 
-<h1>Movies</h1>
-<p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Laborum suscipit vero alias id. Impedit labore nulla quidem tempore placeat! Consequatur veritatis et voluptas laboriosam quo minima cupiditate. Omnis animi, minus sint iure ullam unde nostrum adipisci similique, nesciunt assumenda ducimus soluta ab rerum a distinctio fugit. Voluptatem id fuga quia nihil non provident laborum quibusdam! Molestias eaque sint veritatis sunt, ex dolores ut debitis repellat necessitatibus accusantium eligendi? Quo iure sunt, quos, animi voluptatum dolores dicta eius illo magni mollitia a. Dolor a iure optio, mollitia sed excepturi. Explicabo laboriosam ab velit quos cum autem totam et accusamus, laborum dicta.</p>
+<div class="container mt-3">
+    
+    <form method="get" action=".">
+        <div class="d-flex align-items-center row mb-5">
+            <div class="col-sm">
+                Género:
+                <select class="form-select" name="genre">
+                    <option value="none">Todos</option>
+                    {% for genre in genres %}
+                    <option value="{{ genre.name }}" {% if genre.name == request.GET.genre %} selected {% endif %}>{{ genre.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-sm">
+                <input type="text" class="form-control" id="director" name="director" placeholder="Nombre del director" value="{{ request.GET.director|default_if_none:'' }}">
+            </div>
+            <div class="col-sm">
+                <button type="submit" class="btn btn-primary">Buscar</button>
+            </div>
+        </div>
+    </form>
+    <div class="row">
+        {% for movie in movies %}
+        <div class="col-md-6 col-lg-4 mb-3">
+            <div class="card h-100">
+                <img src="{{ movie.image.url }}" class="card-img-top" alt="{{ movie.title }}">
+                <div class="card-body">
+                    <h5 class="card-title">{{ movie.title }}</h5>
+                    <a href="{% url 'movie_detail' movie_id=movie.id %}" class="btn btn-primary">Más información</a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <p>No se encontraron películas.</p>
+        {% endfor %}
+    </div>
+</div>
 
 {% endblock %}
