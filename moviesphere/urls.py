@@ -19,10 +19,19 @@ from django.urls import path
 from movies import views
 from django.conf import settings
 from django.conf.urls.static import static
+from django.contrib.auth import views as auth_views
+from django.contrib.messages.views import SuccessMessageMixin
+
+class MyPasswordChangeView(SuccessMessageMixin, auth_views.PasswordChangeView):
+    template_name = 'change_password.html'
+    success_url = '/'
+    success_message = "Your password was successfully updated!"
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.home, name='home'),
+    path('edit-profile/', views.edit_profile, name='edit_profile'),
+    path('change-password/', auth_views.PasswordChangeView.as_view(), name='password'),
     path('signup/', views.signup, name='signup'),
     path('movies/', views.movies, name='movies'),
     path('movies/<int:movie_id>/', views.movie_detail, name='movie_detail'),

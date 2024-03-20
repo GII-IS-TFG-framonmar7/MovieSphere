@@ -22,24 +22,28 @@
     </div>
     <div class="row mt-5">
         <div class="col-12">
-            <h2>Elenco</h2>
-            <div class="row">
-                {% for performance in movie.performance_set.all %}
-                    <div class="col-md-3 col-sm-6 mb-4">
-                        <div class="card h-100">
-                            <img src="{{ performance.actor.principalImage.url }}" class="card-img-top" style="height: 80%;" alt="{{ performance.actor.name }}">
-                            <div class="card-body">
-                                <h5 class="card-title">{{ performance.actor.name }}</h5>
-                                <p class="card-text">{{ performance.characterName }}</p>
+            {% if movie.performance_set.all.exists %}
+                <h2>Elenco</h2>
+                <div class="row">
+                    {% for performance in movie.performance_set.all %}
+                        <div class="col-md-3 col-sm-6 mb-4">
+                            <div class="card h-100">
+                                <img src="{{ performance.actor.principalImage.url }}" class="card-img-top" style="height: 80%;" alt="{{ performance.actor.name }}">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ performance.actor.name }}</h5>
+                                    <p class="card-text">{{ performance.characterName }}</p>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    {% if forloop.counter|divisibleby:4 and not forloop.last %}
-                        </div>
-                        <div class="row">
-                    {% endif %}
-                {% endfor %}
-            </div>
+                        {% if forloop.counter|divisibleby:4 and not forloop.last %}
+                            </div>
+                            <div class="row">
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            {% else %}
+                <h2>¡Aún no se ha registrado el elenco de esta película!</h2>
+            {% endif %}
         </div>
     </div>
 </div>
