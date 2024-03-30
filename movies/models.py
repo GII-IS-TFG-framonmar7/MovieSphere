@@ -1,4 +1,6 @@
 from django.db import models
+from django.utils import timezone
+from django.contrib.auth.models import User
 
 class Genre(models.Model):
     name = models.CharField(max_length=255, unique=True)
@@ -20,6 +22,28 @@ class Movie(models.Model):
 
     def __str__(self):
         return self.title
+    
+class Review(models.Model):
+    class State(models.TextChoices):
+        PUBLISHED = 'PUBLISHED', 'Published'
+        IN_REVIEW = 'IN_REVIEW', 'In Review'
+        DELETED = 'DELETED', 'Deleted'
+
+    title = models.CharField(max_length=255)
+    body = models.TextField()
+    rating = models.PositiveIntegerField()
+    publicationDate = models.DateField(default=timezone.now)
+    hateScore = models.IntegerField(default=0)
+    state = models.CharField(
+        max_length=50,
+        choices=State.choices,
+        default=State.IN_REVIEW,
+    )
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reviews')
+    movie = models.ForeignKey(Movie, on_delete=models.CASCADE, related_name='reviews')
+
+    def __str__(self):
+        return f'{self.title} by {self.user.username} for {self.movie.title}'
     
 class Actor(models.Model):
     name = models.CharField(max_length=255)

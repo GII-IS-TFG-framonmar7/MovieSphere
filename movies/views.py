@@ -1,12 +1,15 @@
+from django.apps import apps
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.models import User
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.forms import AuthenticationForm
 from django.db import IntegrityError
-from .models import Movie, Genre
+from .models import Movie, Genre, Review
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import update_session_auth_hash
 from .forms import UserEditForm, CustomUserCreationForm
+from django.utils import timezone
+from django.contrib import messages
 
 def home(request):
     return render(request, 'home.html')
@@ -91,3 +94,52 @@ def movies(request):
 def movie_detail(request, movie_id):
     movie = get_object_or_404(Movie, pk=movie_id)
     return render(request, 'movie_detail.html', {'movie': movie})
+
+
+@login_required
+def create_review(request, movie_id):
+    my_app_config = apps.get_app_config('movies')
+    toxic_model = my_app_config.toxic_model
+    toxic_vectorizer = my_app_config.toxic_vectorizer
+    offensive_model = my_app_config.offensive_model
+    offensive_vectorizer = my_app_config.offensive_vectorizer
+    hate_model = my_app_config.hate_model
+    hate_vectorizer = my_app_config.hate_vectorizer
+
+    movie = get_object_or_404(Movie, pk=movie_id)
+    if request.method == 'POST':
+        title = request.POST.get('title')
+        body = request.POST.get('body')
+        rating = int(request.POST.get('rating'))
+        hateScore = 0
+
+        for model, vectorizer in [(toxic_model, toxic_vectorizer), (offensive_model, offensive_vectorizer), (hate_model, hate_vectorizer)]:
+            body_vectorized = vectorizer.transform([body])
+            hateScore += model.predict(body_vectorized)[0]
+
+        if hateScore < 1:
+            state = Review.State.PUBLISHED
+            messages.success(request, '¡Tu reseña ha sido publicada!')
+        elif 1 <= hateScore < 3:
+            state = Review.State.IN_REVIEW
+            messages.warning(request, 'Tu reseña está pendiente de aprobación.')
+        else:
+            state = Review.State.DELETED
+            messages.error(request, 'Tu reseña no se ha publicado debido a contenido inapropiado.')
+        
+        review = Review(
+            title=title,
+            body=body,
+            rating=rating,
+            publicationDate=timezone.now(),
+            state=state,
+            user=request.user,
+            movie=movie,
+            hateScore=hateScore
+        )
+        review.save()
+        
+        return redirect('movie_detail', movie_id=movie.id)
+    else:
+        messages.error(request, 'Error al publicar tu reseña.')
+        return redirect('movie_detail', movie_id=movie.id)

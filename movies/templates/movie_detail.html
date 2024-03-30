@@ -3,6 +3,24 @@
 {% block content %}
 
 <div class="container mt-3">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            </div>
+            
+            <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                $(".alert").fadeTo(2000, 500).slideUp(500, function () {
+                $(".alert").slideUp(500);
+                });
+            });
+            </script>
+        {% endfor %}
+    {% endif %}
     <div class="row">
         <div class="col-6">
             <img src="{{ movie.image.url }}" alt="{{ movie.title }}" class="img-fluid">
@@ -17,6 +35,11 @@
                 <p><strong>País:</strong> {{ movie.country }} </p>
                 <p><strong>Presupuesto:</strong> {{ movie.budget }} </p>
                 <p><strong>Ingresos:</strong> {{ movie.revenue }} </p>
+                {% if user.is_authenticated %}
+                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modalWriteReview">
+                        Escribir reseña
+                    </button>
+                {% endif %}            
             </div>
         </div>
     </div>
@@ -47,5 +70,42 @@
         </div>
     </div>
 </div>
+
+<!-- Modal fade -->
+<div class="modal fade" id="modalWriteReview" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalLabel">Escribir una nueva reseña</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          <form action="{% url 'create_review' movie.id %}" method="post">
+            {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Título de la reseña</label>
+                        <input type="text" class="form-control" id="title" name="title" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="body" class="form-label">Cuerpo de la reseña</label>
+                        <textarea class="form-control" id="body" name="body" rows="3" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="rating" class="form-label">Puntuación</label>
+                        <select class="form-select" id="rating" name="rating" required>
+                            <option value="">Elige una puntuación</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Enviar reseña</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
 
 {% endblock %}
