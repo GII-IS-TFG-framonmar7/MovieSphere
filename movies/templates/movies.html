@@ -8,7 +8,7 @@
         <div class="d-flex align-items-center row mb-5">
             <div class="col-sm">
                 Género:
-                <select class="form-select" name="genre" onchange="this.form.submit()">
+                <select class="form-select" name="genre" id="genre">
                     <option value="none">Todos</option>
                     {% for genre in genres %}
                     <option value="{{ genre.name }}" {% if genre.name == request.GET.genre %} selected {% endif %}>{{ genre.name }}</option>
@@ -16,14 +16,17 @@
                 </select>
             </div>
             <div class="col-sm">
+                <input type="text" class="form-control" id="title" name="title" placeholder="Título de la película" value="{{ request.GET.title|default_if_none:'' }}">
+            </div>
+            <div class="col-sm">
                 <input type="text" class="form-control" id="director" name="director" placeholder="Nombre del director" value="{{ request.GET.director|default_if_none:'' }}">
             </div>
             <div class="col-sm">
-                <button type="submit" class="btn btn-primary">Buscar</button>
+                <input type="text" class="form-control" id="actor" name="actor" placeholder="Nombre del actor" value="{{ request.GET.actor|default_if_none:'' }}">
             </div>
         </div>
     </form>
-    <div class="row">
+    <div class="row" id="results">
         {% for movie in movies %}
         <div class="col-md-6 col-lg-4 mb-3">
             <div class="card h-100">
@@ -39,5 +42,41 @@
         {% endfor %}
     </div>
 </div>
+
+<script>
+    $(document).ready(function(){
+      $('#genre, #title, #director, #actor').on('change keyup', function() {
+        var genre = $('#genre').val();
+        var title = $('#title').val();
+        var director = $('#director').val();
+        var actor = $('#actor').val();
+        $.ajax({
+            url: '',
+            data: {
+              'genre': $('#genre').val(),
+              'title': $('#title').val(),
+              'director': $('#director').val(),
+              'actor': $('#actor').val(),
+            },
+            dataType: 'json',
+            success: function(data) {
+              var moviesHtml = '';
+              $.each(data.movies, function(index, movie) {
+                var detailUrl = '/movies/' + movie.id + '/';
+                moviesHtml += '<div class="col-md-6 col-lg-4 mb-3">' +
+                    '<div class="card h-100">' +
+                        '<img src="' + movie.image_url + '" class="card-img-top" alt="' + movie.title + '">' +
+                        '<div class="card-body">' +
+                            '<h5 class="card-title">' + movie.title + '</h5>' +
+                            '<a href="' + detailUrl + '" class="btn btn-primary">Más información</a>' +
+                        '</div></div></div>';
+              });
+              $('#results').html(moviesHtml);
+            }
+          });
+          
+      });
+    });
+</script>
 
 {% endblock %}

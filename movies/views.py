@@ -10,6 +10,7 @@ from .forms import UserEditForm, CustomUserCreationForm
 from django.utils import timezone
 from django.contrib import messages
 from django.db.models import Avg
+from django.http import JsonResponse
 
 def home(request):
     return render(request, 'home.html')
@@ -82,14 +83,32 @@ def movies(request):
     if genre_name and genre_name != 'none':
         filter_params['genres__name'] = genre_name
 
+    title = request.GET.get('title')
+    if title:
+        filter_params['title__icontains'] = title
+
     director_name = request.GET.get('director')
     if director_name:
         filter_params['director__icontains'] = director_name
 
-    movies = Movie.objects.filter(**filter_params)
-    genres = Genre.objects.all()
+    actor_name = request.GET.get('actor')
+    if actor_name:
+        filter_params['actors__name__icontains'] = actor_name
 
-    return render(request, 'movies.html', {'movies': movies, 'genres': genres})
+    movies_queryset = Movie.objects.filter(**filter_params).distinct()
+
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        movies_list = [
+            {
+                'id': movie.id, 
+                'title': movie.title, 
+                'image_url': movie.image.url if movie.image else ''
+            } for movie in movies_queryset
+        ]
+        return JsonResponse({'movies': movies_list})
+    
+    genres = Genre.objects.all()
+    return render(request, 'movies.html', {'movies': movies_queryset, 'genres': genres})
 
 def movie_detail(request, movie_id):
     movie = get_object_or_404(Movie, pk=movie_id)
