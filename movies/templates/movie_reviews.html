@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% load review_filters %}
+{% load i18n %}
+
+
+{% block content %}
+
+<div class="container mt-3">
+  <div class="container mb-3">
+    <div class="row">
+      <div class="col text-center">
+        <h1>{{ movie.title }}</h1>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col text-right">
+        <form method="get" action=".">
+          Puntuación:
+          <select class="form-select d-inline-block" name="rating" onchange="this.form.submit()" style="width: auto;">
+            <option value="">Todas</option>
+            <option value="5" {% if request.GET.rating == "5" %} selected {% endif %}>5 estrellas</option>
+            <option value="4" {% if request.GET.rating == "4" %} selected {% endif %}>4 estrellas</option>
+            <option value="3" {% if request.GET.rating == "3" %} selected {% endif %}>3 estrellas</option>
+            <option value="2" {% if request.GET.rating == "2" %} selected {% endif %}>2 estrellas</option>
+            <option value="1" {% if request.GET.rating == "1" %} selected {% endif %}>1 estrella</option>
+          </select>
+        </form>
+      </div>
+    </div>
+  </div>
+    <div class="row">
+        {% for review in reviews %}
+        <div class="col-md-6 col-lg-4 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <!-- Username and how long ago the review was posted -->
+                    <h5 class="card-title">{{ review.user.username }}</h5>
+                    <p class="card-text"><small class="text-muted">Hace {{ review.publicationDate|timesince }}</small></p>
+
+                    <!-- Review rating with stars -->
+                    <p class="card-text">
+                      {{ review.rating|times:"★" }}{{ 5|sub:review.rating|times:"☆" }}
+                    </p>
+                    
+                    <!-- Review body -->
+                    <p class="card-text">{{ review.body }}</p>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <p class="text-center">No hay reseñas disponibles para esta película.</p>
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock %}

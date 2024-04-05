@@ -8,7 +8,7 @@
         <div class="d-flex align-items-center row mb-5">
             <div class="col-sm">
                 Género:
-                <select class="form-select" name="genre">
+                <select class="form-select" name="genre" onchange="this.form.submit()">
                     <option value="none">Todos</option>
                     {% for genre in genres %}
                     <option value="{{ genre.name }}" {% if genre.name == request.GET.genre %} selected {% endif %}>{{ genre.name }}</option>

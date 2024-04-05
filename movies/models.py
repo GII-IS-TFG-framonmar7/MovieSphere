@@ -29,7 +29,6 @@ class Review(models.Model):
         IN_REVIEW = 'IN_REVIEW', 'In Review'
         DELETED = 'DELETED', 'Deleted'
 
-    title = models.CharField(max_length=255)
     body = models.TextField()
     rating = models.PositiveIntegerField()
     publicationDate = models.DateField(default=timezone.now)
@@ -43,7 +42,7 @@ class Review(models.Model):
     movie = models.ForeignKey(Movie, on_delete=models.CASCADE, related_name='reviews')
 
     def __str__(self):
-        return f'{self.title} by {self.user.username} for {self.movie.title}'
+        return f'{self.state}: {self.user.username} for {self.movie.title}'
     
 class Actor(models.Model):
     name = models.CharField(max_length=255)
@@ -53,7 +52,7 @@ class Actor(models.Model):
 
     def __str__(self):
         return self.name
-
+    
 class Performance(models.Model):
     movie = models.ForeignKey(Movie, on_delete=models.CASCADE)
     actor = models.ForeignKey(Actor, on_delete=models.CASCADE)

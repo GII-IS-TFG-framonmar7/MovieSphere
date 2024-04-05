@@ -1,7 +1,6 @@
 from django.apps import apps
 from django.shortcuts import get_object_or_404, render, redirect
-from django.contrib.auth.models import User
-from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import AuthenticationForm
 from django.db import IntegrityError
 from .models import Movie, Genre, Review
@@ -10,6 +9,7 @@ from django.contrib.auth import update_session_auth_hash
 from .forms import UserEditForm, CustomUserCreationForm
 from django.utils import timezone
 from django.contrib import messages
+from django.db.models import Avg
 
 def home(request):
     return render(request, 'home.html')
@@ -93,7 +93,11 @@ def movies(request):
 
 def movie_detail(request, movie_id):
     movie = get_object_or_404(Movie, pk=movie_id)
-    return render(request, 'movie_detail.html', {'movie': movie})
+    reviews = Review.objects.filter(movie=movie, state=Review.State.PUBLISHED)
+    average_rating = reviews.aggregate(Avg('rating'))['rating__avg'] or 0
+    rating_range = range(1, 6)
+
+    return render(request, 'movie_detail.html', {'movie': movie, 'average_rating': average_rating, 'rating_range': rating_range, 'number_of_reviews': reviews.count})
 
 
 @login_required
@@ -108,7 +112,6 @@ def create_review(request, movie_id):
 
     movie = get_object_or_404(Movie, pk=movie_id)
     if request.method == 'POST':
-        title = request.POST.get('title')
         body = request.POST.get('body')
         rating = int(request.POST.get('rating'))
         hateScore = 0
@@ -128,7 +131,6 @@ def create_review(request, movie_id):
             messages.error(request, 'Tu reseña no se ha publicado debido a contenido inapropiado.')
         
         review = Review(
-            title=title,
             body=body,
             rating=rating,
             publicationDate=timezone.now(),
@@ -143,3 +145,20 @@ def create_review(request, movie_id):
     else:
         messages.error(request, 'Error al publicar tu reseña.')
         return redirect('movie_detail', movie_id=movie.id)
+
+def movie_reviews(request, movie_id):
+    movie = get_object_or_404(Movie, pk=movie_id)
+    reviews = Review.objects.filter(movie=movie, state=Review.State.PUBLISHED)
+    average_rating = reviews.aggregate(Avg('rating'))['rating__avg'] or 0
+    
+    rating = request.GET.get('rating')
+    if rating:
+        reviews = reviews.filter(rating=rating)
+    
+    context = {
+        'movie': movie,
+        'reviews': reviews,
+        'average_rating': average_rating
+    }
+    
+    return render(request, 'movie_reviews.html', context)

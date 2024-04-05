@@ -1,111 +1,208 @@
-{% extends 'base.html' %}
-
-{% block content %}
+{% extends 'base.html' %} {% block content %}
 
 <div class="container mt-3">
-    {% if messages %}
-        {% for message in messages %}
-            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-            {{ message }}
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
-            </div>
-            
-            <script>
-            document.addEventListener("DOMContentLoaded", function () {
-                $(".alert").fadeTo(2000, 500).slideUp(500, function () {
-                $(".alert").slideUp(500);
-                });
-            });
-            </script>
-        {% endfor %}
-    {% endif %}
-    <div class="row">
-        <div class="col-6">
-            <img src="{{ movie.image.url }}" alt="{{ movie.title }}" class="img-fluid">
-        </div>
-        <div class="col-6">
-            <div class="row-12">
-                <h1 class="mb-4">{{ movie.title }}</h1>
-                <p><strong>Director:</strong> {{ movie.director }}</p>
-                <p><strong>Género:</strong> {% for genre in movie.genres.all %}{{ genre.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>
-                <p><strong>Fecha de Estreno:</strong> {{ movie.releaseYear }}</p>
-                <p><strong>Duración:</strong> {{ movie.duration }} min.</p>
-                <p><strong>País:</strong> {{ movie.country }} </p>
-                <p><strong>Presupuesto:</strong> {{ movie.budget }} </p>
-                <p><strong>Ingresos:</strong> {{ movie.revenue }} </p>
-                {% if user.is_authenticated %}
-                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modalWriteReview">
-                        Escribir reseña
-                    </button>
-                {% endif %}            
-            </div>
-        </div>
-    </div>
-    <div class="row mt-5">
-        <div class="col-12">
-            {% if movie.performance_set.all.exists %}
-                <h2>Elenco</h2>
-                <div class="row">
-                    {% for performance in movie.performance_set.all %}
-                        <div class="col-md-3 col-sm-6 mb-4">
-                            <div class="card h-100">
-                                <img src="{{ performance.actor.principalImage.url }}" class="card-img-top" style="height: 80%;" alt="{{ performance.actor.name }}">
-                                <div class="card-body">
-                                    <h5 class="card-title">{{ performance.actor.name }}</h5>
-                                    <p class="card-text">{{ performance.characterName }}</p>
-                                </div>
-                            </div>
-                        </div>
-                        {% if forloop.counter|divisibleby:4 and not forloop.last %}
-                            </div>
-                            <div class="row">
-                        {% endif %}
-                    {% endfor %}
-                </div>
-            {% else %}
-                <h2>¡Aún no se ha registrado el elenco de esta película!</h2>
-            {% endif %}
-        </div>
-    </div>
-</div>
+  {% if messages %} {% for message in messages %}
+  <div
+    class="alert alert-{{ message.tags }} alert-dismissible fade show"
+    role="alert"
+  >
+    {{ message }}
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
 
-<!-- Modal fade -->
-<div class="modal fade" id="modalWriteReview" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="modalLabel">Escribir una nueva reseña</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-        </div>
-        <div class="modal-body">
-          <form action="{% url 'create_review' movie.id %}" method="post">
-            {% csrf_token %}
-                    <div class="mb-3">
-                        <label for="title" class="form-label">Título de la reseña</label>
-                        <input type="text" class="form-control" id="title" name="title" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="body" class="form-label">Cuerpo de la reseña</label>
-                        <textarea class="form-control" id="body" name="body" rows="3" required></textarea>
-                    </div>
-                    <div class="mb-3">
-                        <label for="rating" class="form-label">Puntuación</label>
-                        <select class="form-select" id="rating" name="rating" required>
-                            <option value="">Elige una puntuación</option>
-                            <option value="1">1</option>
-                            <option value="2">2</option>
-                            <option value="3">3</option>
-                            <option value="4">4</option>
-                            <option value="5">5</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Enviar reseña</button>
-          </form>
-        </div>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      $(".alert")
+        .fadeTo(2000, 500)
+        .slideUp(500, function () {
+          $(".alert").slideUp(500);
+        });
+    });
+  </script>
+  {% endfor %} {% endif %}
+  <div class="row">
+    <div class="col-6">
+      <img
+        src="{{ movie.image.url }}"
+        alt="{{ movie.title }}"
+        class="img-fluid"
+      />
+    </div>
+    <div class="col-6">
+      <div class="row-12">
+        <h1 class="mb-4">{{ movie.title }}</h1>
+        <p>
+          {% for i in rating_range %} {% if i <= average_rating %}
+          <i class="bi bi-star-fill"></i>
+          {% else %}
+          <i class="bi bi-star"></i>
+          {% endif %} {% endfor %} ({{number_of_reviews}} reseñas)
+        </p>
+
+        <p><strong>Director:</strong> {{ movie.director }}</p>
+        <p><strong>Género:</strong> {{ movie.genres.all|join:", " }}</p>
+        <p><strong>Fecha de Estreno:</strong> {{ movie.releaseYear }}</p>
+        <p><strong>Duración:</strong> {{ movie.duration }} min.</p>
+        <p><strong>País:</strong> {{ movie.country }}</p>
+        <p><strong>Presupuesto:</strong> {{ movie.budget }}</p>
+        <p><strong>Ingresos:</strong> {{ movie.revenue }}</p>
+        <a
+          href="{% url 'movie_reviews' movie.id %}"
+          class="btn btn-primary"
+          role="button"
+        >
+          Ver reseñas de la película
+        </a>
+        {% if user.is_authenticated %}
+        <button
+          type="button"
+          class="btn btn-primary"
+          data-toggle="modal"
+          data-target="#modalWriteReview"
+        >
+          Escribir reseña
+        </button>
+        {% endif %}
       </div>
     </div>
   </div>
+  <div class="row mt-5">
+    <div class="col-12">
+      {% if movie.performance_set.all.exists %}
+      <h2>Elenco</h2>
+      <div class="row">
+        {% for performance in movie.performance_set.all %}
+        <div class="col-md-3 col-sm-6 mb-4">
+          <div class="card h-100">
+            <img
+              src="{{ performance.actor.principalImage.url }}"
+              class="card-img-top"
+              style="height: 80%"
+              alt="{{ performance.actor.name }}"
+            />
+            <div class="card-body">
+              <h5 class="card-title">{{ performance.actor.name }}</h5>
+              <p class="card-text">{{ performance.characterName }}</p>
+            </div>
+          </div>
+        </div>
+        {% if forloop.counter|divisibleby:4 and not forloop.last %}
+      </div>
+      <div class="row">{% endif %} {% endfor %}</div>
+      {% else %}
+      <h2>¡Aún no se ha registrado el elenco de esta película!</h2>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Modal fade -->
+<div
+  class="modal fade"
+  id="modalWriteReview"
+  tabindex="-1"
+  aria-labelledby="modalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalLabel">Escribir una nueva reseña</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Cerrar"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <form action="{% url 'create_review' movie.id %}" method="post">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label for="rating" class="form-label">Puntuación</label>
+            <div>
+              <button
+                type="button"
+                class="btn btn-outline-primary rating-star"
+                data-value="1"
+              >
+                <i class="bi bi-star-fill bi-sm"></i>
+              </button>
+              <button
+                type="button"
+                class="btn btn-outline-primary rating-star"
+                data-value="2"
+              >
+                <i class="bi bi-star-fill bi-sm"></i>
+              </button>
+              <button
+                type="button"
+                class="btn btn-outline-primary rating-star"
+                data-value="3"
+              >
+                <i class="bi bi-star-fill bi-sm"></i>
+              </button>
+              <button
+                type="button"
+                class="btn btn-outline-primary rating-star"
+                data-value="4"
+              >
+                <i class="bi bi-star-fill bi-sm"></i>
+              </button>
+              <button
+                type="button"
+                class="btn btn-outline-primary rating-star"
+                data-value="5"
+              >
+                <i class="bi bi-star-fill bi-sm"></i>
+              </button>
+              <input
+                type="hidden"
+                id="rating"
+                name="rating"
+                value=""
+                required
+              />
+            </div>
+          </div>
+          <div class="mb-3">
+            <label for="body" class="form-label">Cuerpo de la reseña</label>
+            <textarea
+              class="form-control"
+              id="body"
+              name="body"
+              rows="3"
+              required
+            ></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary">Enviar reseña</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const stars = document.querySelectorAll(".rating-star");
+
+    stars.forEach((star) => {
+      star.addEventListener("click", function () {
+        const value = this.getAttribute("data-value");
+        document.getElementById("rating").value = value;
+        stars.forEach((s) => {
+          s.classList.remove("btn-primary");
+          s.classList.add("btn-outline-primary");
+          if (s.getAttribute("data-value") <= value) {
+            s.classList.remove("btn-outline-primary");
+            s.classList.add("btn-primary");
+          }
+        });
+      });
+    });
+  });
+</script>
 
 {% endblock %}
