@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Amonestación de Cuenta</title>
+  </head>
+  <body>
+    <p>Hola {{ user.username }},</p>
+
+    <p>
+      Nos ponemos en contacto contigo para informarte que se ha emitido una
+      amonestación en tu cuenta debido a una reciente revisión que no cumple con
+      nuestras políticas de comunidad. Esto es específicamente en referencia a
+      la siguiente revisión:
+    </p>
+
+    <p>"{{ review.body }}"</p>
+
+    <p>Fecha de la revisión: {{ review.publicationDate }}</p>
+
+    <p>
+      Si crees que esto ha sido un error, o si tienes alguna pregunta, no dudes
+      en contactarnos a este mismo correo.
+    </p>
+
+    <p>Gracias por tu comprensión y cooperación.</p>
+
+    <p>Atentamente,</p>
+    <p>El Equipo de MovieSphere</p>
+  </body>
+</html>

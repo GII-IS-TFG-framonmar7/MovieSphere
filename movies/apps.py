@@ -27,6 +27,8 @@ class MoviesConfig(AppConfig):
     hate_vectorizer = None
 
     def ready(self):
+        import movies.signals
+        
         if not self.toxic_model:
             self.toxic_model = load(self.toxic_model_path)
         if not self.toxic_vectorizer:
