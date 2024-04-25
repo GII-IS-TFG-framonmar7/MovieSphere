@@ -6,7 +6,9 @@
     <title>Amonestación de Cuenta</title>
   </head>
   <body>
-    <p>Hola {{ user.username }},</p>
+    <h1>Amonestación de Cuenta</h1>
+
+    <p>Hola <strong>{{ user.username }}</strong>,</p>
 
     <p>
       Nos ponemos en contacto contigo para informarte que se ha emitido una
@@ -15,18 +17,18 @@
       la siguiente revisión:
     </p>
 
-    <p>"{{ review.body }}"</p>
-
-    <p>Fecha de la revisión: {{ review.publicationDate }}</p>
+    <h4>"{{ review.body|escape }}"</h4>
 
     <p>
       Si crees que esto ha sido un error, o si tienes alguna pregunta, no dudes
       en contactarnos a este mismo correo.
     </p>
 
-    <p>Gracias por tu comprensión y cooperación.</p>
+    <ul>
+      <li>Gracias por tu comprensión y cooperación.</li>
+    </ul>
 
     <p>Atentamente,</p>
-    <p>El Equipo de MovieSphere</p>
+    <h2>El Equipo de MovieSphere</h2>
   </body>
 </html>

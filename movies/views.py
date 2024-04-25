@@ -124,8 +124,7 @@ def movie_detail(request, movie_id):
 
     return render(request, 'movie_detail.html', {'movie': movie, 'average_rating': average_rating, 'rating_range': rating_range, 'number_of_reviews': reviews.count})
 
-@login_required
-def create_review(request, movie_id):
+def calculate_hate_score(body):
     my_app_config = apps.get_app_config('movies')
     toxic_model = my_app_config.toxic_model
     toxic_vectorizer = my_app_config.toxic_vectorizer
@@ -134,41 +133,106 @@ def create_review(request, movie_id):
     hate_model = my_app_config.hate_model
     hate_vectorizer = my_app_config.hate_vectorizer
 
+    hate_score = 0
+
+    for model, vectorizer in [(toxic_model, toxic_vectorizer), (offensive_model, offensive_vectorizer), (hate_model, hate_vectorizer)]:
+        body_vectorized = vectorizer.transform([body])
+        hate_score += model.predict(body_vectorized)[0]
+
+    return hate_score
+
+@login_required
+def create_review(request, movie_id, is_draft=False):
     movie = get_object_or_404(Movie, pk=movie_id)
     if request.method == 'POST':
         body = request.POST.get('body')
-        rating = int(request.POST.get('rating'))
+        rating = request.POST.get('rating')
         hateScore = 0
-
-        for model, vectorizer in [(toxic_model, toxic_vectorizer), (offensive_model, offensive_vectorizer), (hate_model, hate_vectorizer)]:
-            body_vectorized = vectorizer.transform([body])
-            hateScore += model.predict(body_vectorized)[0]
 
         review = Review(
             body=body,
             rating=rating,
-            publicationDate=timezone.now(),
             user=request.user,
             movie=movie,
             hateScore=hateScore
         )
 
-        if hateScore < 1:
-            review.state = Review.State.PUBLISHED
-            messages.success(request, '¡Tu reseña ha sido publicada!')
-        elif 1 <= hateScore < 3:
-            review.state = Review.State.IN_REVIEW
-            messages.warning(request, 'Tu reseña está pendiente de aprobación.')
+        if is_draft:
+            review.state = Review.State.IN_DRAFT
+            review.save()
+            messages.info(request, 'Tu reseña ha sido guardada como borrador.')
+            return redirect('movie_detail', movie_id=movie.id)
         else:
-            review.state = Review.State.DELETED
-            messages.error(request, 'Tu reseña no se ha publicado debido a contenido inapropiado.')
+            hateScore = calculate_hate_score(body)
+            review.hateScore = hateScore
 
-        review.save()
+            if hateScore < 1:
+                review.state = Review.State.PUBLISHED
+                review.publicationDate = timezone.now()
+                messages.success(request, '¡Tu reseña ha sido publicada!')
+            elif 1 <= hateScore < 3:
+                review.state = Review.State.IN_REVIEW
+                messages.warning(request, 'Tu reseña está pendiente de aprobación.')
+            else:
+                review.state = Review.State.FORBIDDEN
+                messages.error(request, 'Tu reseña no se ha publicado debido a contenido inapropiado.')
+
+            review.save()
         
         return redirect('movie_detail', movie_id=movie.id)
     else:
         messages.error(request, 'Error al publicar tu reseña.')
         return redirect('movie_detail', movie_id=movie.id)
+    
+@login_required
+def update_review(request, review_id, is_draft=False):
+    review = get_object_or_404(Review, id=review_id, user=request.user)
+    new_rating = request.POST.get('rating')
+    new_body = request.POST.get('body')
+
+    if request.method == 'POST':
+        review.rating = new_rating
+        review.body = new_body
+        if is_draft:
+            messages.success(request, 'Reseña actualizada correctamente.')
+            review.save()
+            return redirect('draft_reviews')
+        else:
+            hateScore = calculate_hate_score(new_body)
+            review.hateScore = hateScore
+
+            if hateScore < 1:
+                review.state = Review.State.PUBLISHED
+                review.publicationDate = timezone.now()
+                messages.success(request, 'Reseña publicada exitosamente.')
+                review.save()
+                return redirect('movie_reviews', movie_id=review.movie.id)
+            elif 1 <= hateScore < 3:
+                review.state = Review.State.IN_REVIEW
+                messages.warning(request, 'Tu reseña está pendiente de aprobación.')
+                review.save()
+                return redirect('movie_detail', movie_id=review.movie.id)
+            else:
+                review.state = Review.State.FORBIDDEN
+                messages.error(request, 'Tu reseña no se ha publicado debido a contenido inapropiado.')
+                review.save()
+                return redirect('movie_detail', movie_id=review.movie.id)
+    else:
+        messages.error(request, 'No se pudo actualizar la reseña.')
+        return redirect('some_view_for_review_details', review_id=review.id)
+    
+@login_required
+def delete_review(request, review_id):
+    review = get_object_or_404(Review, id=review_id, user=request.user)
+    movie_id = review.movie.id
+    if request.method == 'POST':
+        review.state = Review.State.DELETED
+        review.save()
+        messages.success(request, 'La reseña ha sido eliminada con éxito.')
+        return redirect('draft_reviews')
+    else:
+        messages.error(request, 'No se pudo eliminar la reseña.')
+        return redirect('draft_reviews')
 
 def movie_reviews(request, movie_id):
     movie = get_object_or_404(Movie, pk=movie_id)
@@ -186,3 +250,9 @@ def movie_reviews(request, movie_id):
     }
     
     return render(request, 'movie_reviews.html', context)
+
+@login_required
+def view_draft_reviews(request):
+    draft_reviews = Review.objects.filter(user=request.user, state=Review.State.IN_DRAFT)
+    
+    return render(request, 'movie_reviews.html', {'reviews': draft_reviews, 'show_drafts': True})

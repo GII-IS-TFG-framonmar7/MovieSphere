@@ -2,10 +2,11 @@ from django.db import models
 from django.utils import timezone
 from dateutil.relativedelta import relativedelta
 from django.contrib.auth.models import User
-from django.core.mail import send_mail
 from django.conf import settings
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
+from django.core.mail import EmailMultiAlternatives
+from django.core.exceptions import ValidationError
 
 class UserProfile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='profile')
@@ -38,12 +39,14 @@ class Movie(models.Model):
 class Review(models.Model):
     class State(models.TextChoices):
         PUBLISHED = 'PUBLISHED', 'Published'
+        IN_DRAFT = 'IN_DRAFT', 'In Draft'
         IN_REVIEW = 'IN_REVIEW', 'In Review'
+        FORBIDDEN = 'FORBIDDEN', 'Forbidden'
         DELETED = 'DELETED', 'Deleted'
 
     body = models.TextField()
     rating = models.PositiveIntegerField()
-    publicationDate = models.DateField(default=timezone.now)
+    publicationDate = models.DateField(blank=True, null=True)
     hateScore = models.IntegerField(default=0)
     state = models.CharField(
         max_length=50,
@@ -64,8 +67,18 @@ class Review(models.Model):
         
         super().save(*args, **kwargs)
 
-        if (is_new and self.state == self.State.DELETED) or (not is_new and old_state != self.state and self.state == self.State.DELETED):
+        should_create_strike = (
+            (is_new and self.state == self.State.FORBIDDEN) or
+            (not is_new and old_state != self.state and self.state == self.State.FORBIDDEN)
+        )
+
+        # Check if a strike already exists for this review
+        strike_exists = Strike.objects.filter(review=self).exists()
+
+        if should_create_strike and not strike_exists:
             Strike.objects.create(review=self, user=self.user)
+        elif should_create_strike and strike_exists:
+            raise ValidationError("This review already has an associated strike and cannot generate another.")
 
     def __str__(self):
         return f'{self.state}: {self.user.username} for {self.movie.title}'
@@ -91,20 +104,26 @@ class Strike(models.Model):
             ).count()
 
             subject = 'Incumplimiento de las políticas de comunidad'
-            html_message = render_to_string('email/strike_notification.html', {'user': self.user, 'review': self.review})
-            plain_message = strip_tags(html_message)
+            text_content = strip_tags(render_to_string('email/strike_notification.html', {'user': self.user, 'review': self.review}))
+            html_content = render_to_string('email/strike_notification.html', {'user': self.user, 'review': self.review})
+            from_email = settings.EMAIL_HOST_USER
             recipient_list = [self.user.email]
-            send_mail(subject, plain_message, settings.EMAIL_HOST_USER, recipient_list, html_message=html_message)
+            msg = EmailMultiAlternatives(subject, text_content, from_email, recipient_list)
+            msg.attach_alternative(html_content, "text/html")
+            msg.send()
 
             if current_strikes >= 3:
                 self.user.profile.is_banned = True
                 self.user.profile.save()
 
                 subject = 'Esto es embarazoso...'
-                html_message = render_to_string('email/ban_notification.html', {'user': self.user})
-                plain_message = strip_tags(html_message)
+                text_content = strip_tags(render_to_string('email/ban_notification.html', {'user': self.user}))
+                html_content = render_to_string('email/ban_notification.html', {'user': self.user})
+                from_email = settings.EMAIL_HOST_USER
                 recipient_list = [self.user.email]
-                send_mail(subject, plain_message, settings.EMAIL_HOST_USER, recipient_list, html_message=html_message)
+                msg = EmailMultiAlternatives(subject, text_content, from_email, recipient_list)
+                msg.attach_alternative(html_content, "text/html")
+                msg.send()
     
     def __str__(self):
         return f'Strike for {self.user.username} on {self.date_issued.strftime("%Y-%m-%d")}'

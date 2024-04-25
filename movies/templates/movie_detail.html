@@ -118,7 +118,7 @@
         ></button>
       </div>
       <div class="modal-body">
-        <form action="{% url 'create_review' movie.id %}" method="post">
+        <form id="reviewForm" method="post">
           {% csrf_token %}
           <div class="mb-3">
             <label for="rating" class="form-label">Puntuación</label>
@@ -162,7 +162,7 @@
                 type="hidden"
                 id="rating"
                 name="rating"
-                value=""
+                value="1"
                 required
               />
             </div>
@@ -177,7 +177,20 @@
               required
             ></textarea>
           </div>
-          <button type="submit" class="btn btn-primary">Enviar reseña</button>
+          <button
+            type="submit"
+            class="btn btn-primary"
+            formaction="{% url 'publish_review' movie.id %}"
+          >
+            Publicar reseña
+          </button>
+          <button
+            type="submit"
+            class="btn btn-secondary"
+            formaction="{% url 'save_draft' movie.id %}"
+          >
+            Guardar en borrador
+          </button>
         </form>
       </div>
     </div>
@@ -187,8 +200,14 @@
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     const stars = document.querySelectorAll(".rating-star");
+    const initialRating = 1;
+    document.getElementById("rating").value = initialRating;
 
-    stars.forEach((star) => {
+    stars.forEach((star, index) => {
+      if (index < initialRating) {
+        star.classList.remove("btn-outline-primary");
+        star.classList.add("btn-primary");
+      }
       star.addEventListener("click", function () {
         const value = this.getAttribute("data-value");
         document.getElementById("rating").value = value;
