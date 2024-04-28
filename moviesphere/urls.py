@@ -21,8 +21,8 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
 from django.contrib.messages.views import SuccessMessageMixin
-from movies.views import create_review, update_review, delete_review
-from movies.views import movie_reviews, view_draft_reviews
+from movies.views import create_review, update_review, delete_review, movie_reviews, view_draft_reviews
+from news.views import news, new_detail, create_new, update_new, delete_new, view_draft_news
 
 class MyPasswordChangeView(SuccessMessageMixin, auth_views.PasswordChangeView):
     template_name = 'change_password.html'
@@ -32,10 +32,14 @@ class MyPasswordChangeView(SuccessMessageMixin, auth_views.PasswordChangeView):
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.home, name='home'),
+
     path('edit-profile/', views.edit_profile, name='edit_profile'),
     path('change-password/', auth_views.PasswordChangeView.as_view(), name='password'),
+    path('signin/', views.signin, name='signin'),
     path('signup/', views.signup, name='signup'),
+    path('logout/', views.signout, name='logout'),
     path('movies/', views.movies, name='movies'),
+
     path('movies/<int:movie_id>/', views.movie_detail, name='movie_detail'),
     path('movies/<int:movie_id>/review/draft/', create_review, {'is_draft': True}, name='save_draft'),
     path('movies/<int:movie_id>/review/publish/', create_review, name='publish_review'),
@@ -44,8 +48,15 @@ urlpatterns = [
     path('review/<int:review_id>/update/publish/', update_review, name='update_publish_review'),
     path('movies/<int:movie_id>/reviews/', movie_reviews, name='movie_reviews'),
     path('reviews/drafts/', view_draft_reviews, name='draft_reviews'),
-    path('logout/', views.signout, name='logout'),
-    path('signin/', views.signin, name='signin')
+
+    path('news/', news, name='news'),
+    path('news/<int:new_id>/', new_detail, name='new_detail'),
+    path('news/draft/', create_new, {'is_draft': True}, name='draft_new'),
+    path('news/publish/', create_new, name='publish_new'),
+    path('new/<int:new_id>/delete/', delete_new, name='delete_new'),
+    path('new/<int:new_id>/update/draft/', update_new, {'is_draft': True}, name='update_draft_new'),
+    path('new/<int:new_id>/update/publish/', update_new, name='update_publish_new'),
+    path('news/drafts/', view_draft_news, name='draft_news')
 ]
 
 if settings.DEBUG:

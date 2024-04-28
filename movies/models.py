@@ -7,6 +7,7 @@ from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.core.mail import EmailMultiAlternatives
 from django.core.exceptions import ValidationError
+from news.models import New
 
 class UserProfile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='profile')
@@ -86,7 +87,8 @@ class Review(models.Model):
 class Strike(models.Model):    
     date_issued = models.DateField(default=timezone.now)
     expiration_date = models.DateField()
-    review = models.OneToOneField(Review, on_delete=models.CASCADE, related_name='strike')
+    review = models.OneToOneField(Review, on_delete=models.CASCADE, null=True, related_name='strike')
+    new = models.OneToOneField(New, on_delete=models.CASCADE, null=True, related_name='strike')
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='warnings')
 
     def save(self, *args, **kwargs):
@@ -104,8 +106,12 @@ class Strike(models.Model):
             ).count()
 
             subject = 'Incumplimiento de las políticas de comunidad'
-            text_content = strip_tags(render_to_string('email/strike_notification.html', {'user': self.user, 'review': self.review}))
-            html_content = render_to_string('email/strike_notification.html', {'user': self.user, 'review': self.review})
+            if self.review:
+                text_content = strip_tags(render_to_string('email/strike_notification.html', {'user': self.user, 'sample': self.review}))
+                html_content = render_to_string('email/strike_notification.html', {'user': self.user, 'sample': self.review})
+            else:
+                text_content = strip_tags(render_to_string('email/strike_notification.html', {'user': self.user, 'sample': self.new}))
+                html_content = render_to_string('email/strike_notification.html', {'user': self.user, 'sample': self.new})
             from_email = settings.EMAIL_HOST_USER
             recipient_list = [self.user.email]
             msg = EmailMultiAlternatives(subject, text_content, from_email, recipient_list)

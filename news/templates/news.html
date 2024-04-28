@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container p-4 bg-light">
+    <form method="get" action=".">
+        <div class="d-flex align-items-center row mb-5">
+            <div class="col-sm">
+                <label for="category" class="form-label"><i class="bi bi-filter"></i> Categoría:</label>
+                <select class="form-select shadow-sm rounded" name="category" id="category">
+                    <option value="none">Todos</option>
+                    {% for category in categories %}
+                        <option value="{{ category.name }}" {% if category.name == request.GET.category %} selected {% endif %}>{{ category.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-sm">
+                <input type="text" class="form-control shadow-sm rounded" id="title" name="title" placeholder="Título de la noticia" value="{{ request.GET.title|default_if_none:'' }}">
+            </div>
+            {% if user_is_writer %}
+            <div class="mb-3 text-end">
+                <button
+                type="button"
+                class="btn btn-outline-primary"
+                data-toggle="modal"
+                data-target="#modalWriteNew"
+                >
+                Escribir noticia
+                </button>
+            </div>
+            {% endif %}
+        </div>
+    </form>
+    {% if messages %} {% for message in messages %}
+    <div
+        class="alert alert-{{ message.tags }} alert-dismissible fade show"
+        role="alert"
+    >
+        {{ message }}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    {% endfor %} {% endif %}
+
+    <div class="row" id="results">
+        {% for new in news %}
+        <div class="col-md-6 col-lg-4 mb-3">
+            <div class="card h-100 shadow hover-animate">
+                <img src="{{ new.photo.url }}" class="card-img-top" alt="{{ new.title }}">
+                <div class="card-body">
+                    <h5 class="card-title">{{ new.title }}</h5>
+                    <a href="{% url 'new_detail' new_id=new.id %}" class="btn btn-primary rounded">Más información</a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <p>No se encontraron noticias.</p>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Modal fade -->
+<div
+  class="modal fade"
+  id="modalWriteNew"
+  tabindex="-1"
+  aria-labelledby="modalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalLabel">Escribir una nueva noticia</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Cerrar"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <form id="newForm" method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label for="newTitle" class="form-label">Título de la noticia</label>
+            <input type="text" class="form-control" id="newTitle" name="title" required>
+          </div>
+          <div class="mb-3">
+            <label for="newBody" class="form-label">Cuerpo de la noticia</label>
+            <textarea class="form-control" id="newBody" name="body" rows="5" required></textarea>
+          </div>
+          <div class="mb-3">
+            <label for="newCategory" class="form-label">Categoría</label>
+            <select class="form-select" id="newCategory" name="category" required>
+              {% for category in categories %}
+                <option value="{{ category.id }}">{{ category.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="newPhoto" class="form-label">Foto de la noticia</label>
+            <input type="file" class="form-control" id="newPhoto" name="photo" required>
+          </div>
+          <button
+            type="submit"
+            class="btn btn-primary"
+            formaction="{% url 'publish_new' %}"
+          >
+            Publicar noticia
+          </button>
+          <button
+            type="submit"
+            class="btn btn-secondary"
+            formaction="{% url 'draft_new' %}"
+          >
+            Guardar en borrador
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    $(".alert")
+      .fadeTo(2000, 500)
+      .slideUp(500, function () {
+        $(".alert").slideUp(500);
+      });
+  });
+</script>
+
+<script>
+    $(document).ready(function(){
+      $('#category, #title').on('change keyup', function() {
+        var category = $('#category').val();
+        var title = $('#title').val();
+        $.ajax({
+            url: '',
+            data: {
+              'category': $('#category').val(),
+              'title': $('#title').val(),
+            },
+            dataType: 'json',
+            success: function(data) {
+              var newsHtml = '';
+              $.each(data.news, function(index, newsItem) {
+                var detailUrl = '/news/' + newsItem.id + '/';
+                newsHtml += '<div class="col-md-6 col-lg-4 mb-3">' +
+                    '<div class="card h-100 shadow hover-animate">' +
+                        '<img src="' + newsItem.image + '" class="card-img-top" alt="' + newsItem.title + '">' +
+                        '<div class="card-body">' +
+                            '<h5 class="card-title">' + newsItem.title + '</h5>' +
+                            '<a href="' + detailUrl + '" class="btn btn-primary rounded">Más información</a>' +
+                        '</div></div></div>';
+              });
+              $('#results').html(newsHtml);
+            }
+          });
+          
+      });
+    });
+</script>
+
+{% endblock %}

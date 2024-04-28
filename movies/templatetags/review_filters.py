@@ -3,7 +3,6 @@ from django.utils.timesince import timesince as timesince_
 from django.utils import timezone
 from django.utils.timezone import is_naive, make_aware, get_default_timezone
 
-
 register = template.Library()
 
 @register.filter

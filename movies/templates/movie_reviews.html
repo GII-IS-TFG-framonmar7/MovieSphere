@@ -61,10 +61,10 @@
   </div>
   <div class="row">
     {% for review in reviews %}
-      <div class="col-md-6 col-lg-4 mb-3">
+      <div class="col-md-6 col-lg-4 mb-4">
         <div class="card h-100">
-          <div class="card-body">
-            <!-- Username and how long ago the review was posted -->
+          <div class="card-body d-flex flex-column">
+            <!-- Título de la tarjeta -->
             <h5 class="card-title">
               {% if show_drafts %}
                 {{ review.movie.title }}
@@ -72,26 +72,29 @@
                 {{ review.user.username }}
               {% endif %}
             </h5>
+            <!-- Fecha de publicación, si aplica -->
             {% if not show_drafts %}
               <p class="card-text"><small class="text-muted">Hace {{ review.publicationDate|timesince }}</small></p>
             {% endif %}
-
-            <!-- Review rating with stars -->
+  
+            <!-- Calificación de la revisión con estrellas -->
             <p class="card-text">
               {{ review.rating|times:"★" }}{{ 5|sub:review.rating|times:"☆" }}
             </p>
-                    
-            <!-- Review body -->
+                      
+            <!-- Cuerpo de la revisión -->
             <p class="card-text">{{ review.body }}</p>
-
-            <!-- Update and delete buttons -->
+  
+            <!-- Botones de acción, si aplica -->
             {% if show_drafts or review.state == Review.State.PUBLISHED %}
-              <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#editReviewModal-{{ review.id }}">
-                {% trans "Editar" %}
-              </button>
-              <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#deleteReviewModal-{{ review.id }}">
-                {% trans "Eliminar" %}
-              </button>
+              <div class="d-flex justify-content-between">
+                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#editReviewModal-{{ review.id }}">
+                  {% trans "Editar" %}
+                </button>
+                <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#deleteReviewModal-{{ review.id }}">
+                  {% trans "Eliminar" %}
+                </button>
+              </div>
             {% endif %}
           </div>
         </div>
@@ -168,46 +171,41 @@
 <script type="text/javascript">
   $(document).ready(function() {
     {% for review in reviews %}
-    initializeRatingStars({{ review.id }}, {{ review.rating }});
-
-    // When the modal is closed, the form values are reset
-    $('#editReviewModal-{{ review.id }}').on('hidden.bs.modal', function () {
-        resetReviewForm({{ review.id }}, {{ review.rating }}, "{{ review.body|escapejs }}");
-    });
-
+      initializeRatingStars({{ review.id }}, {{ review.rating }});
+      $('#editReviewModal-{{ review.id }}').on('hidden.bs.modal', function () {
+          resetReviewForm({{ review.id }}, {{ review.rating }}, "{{ review.body|escapejs }}");
+      });
     {% endfor %}
   });
 
   function resetReviewForm(reviewId, originalRating, originalBody) {
-    document.querySelector(`#body-${reviewId}`).value = originalBody;
-    document.querySelector(`#rating-${reviewId}`).value = originalRating;
-    initializeRatingStars(reviewId, originalRating);
-  }
-
-  // Star number initialization
-  function initializeRatingStars(reviewId, rating) {
-    const container = document.querySelector(`#reviewForm-${reviewId} .rating-container`);
-    container.innerHTML = '';
-    for (let i = 1; i <= 5; i++) {
-      const star = document.createElement('button');
-      star.type = 'button';
-      star.className = `btn ${i <= rating ? 'btn-primary' : 'btn-outline-primary'} rating-star`;
-      star.dataset.value = i;
-      star.innerHTML = '<i class="bi bi-star-fill bi-sm"></i>';
-      star.onclick = function() {
-        document.querySelector(`#rating-${reviewId}`).value = i;
-        initializeRatingStars(reviewId, i);
-      };
-      container.appendChild(star);
+    var bodyInput = document.querySelector(`#body-${reviewId}`);
+    var ratingInput = document.querySelector(`#rating-${reviewId}`);
+    if (bodyInput && ratingInput) {
+      bodyInput.value = originalBody;
+      ratingInput.value = originalRating;
+      initializeRatingStars(reviewId, originalRating);
     }
   }
 
-  // Stars are initialized for each review
-  document.addEventListener('DOMContentLoaded', (event) => {
-    {% for review in reviews %}
-    initializeRatingStars({{ review.id }}, {{ review.rating }});
-    {% endfor %}
-  });
+  function initializeRatingStars(reviewId, rating) {
+    const container = document.querySelector(`#reviewForm-${reviewId} .rating-container`);
+    if (container) {
+      container.innerHTML = '';
+      for (let i = 1; i <= 5; i++) {
+        const star = document.createElement('button');
+        star.type = 'button';
+        star.className = `btn ${i <= rating ? 'btn-primary' : 'btn-outline-primary'} rating-star`;
+        star.dataset.value = i;
+        star.innerHTML = '<i class="bi bi-star-fill bi-sm"></i>';
+        star.addEventListener('click', function() {
+          document.querySelector(`#rating-${reviewId}`).value = i;
+          initializeRatingStars(reviewId, i);
+        });
+        container.appendChild(star);
+      }
+    }
+  }
 </script>
 
 {% endblock %}

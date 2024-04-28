@@ -3,7 +3,7 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import AuthenticationForm
 from django.db import IntegrityError
-from .models import Movie, Genre, Review, Strike
+from .models import Movie, Genre, Review
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import update_session_auth_hash
 from .forms import UserEditForm, CustomUserCreationForm
@@ -121,11 +121,12 @@ def movie_detail(request, movie_id):
     reviews = Review.objects.filter(movie=movie, state=Review.State.PUBLISHED)
     average_rating = reviews.aggregate(Avg('rating'))['rating__avg'] or 0
     rating_range = range(1, 6)
+    last_review = reviews.last()
 
-    return render(request, 'movie_detail.html', {'movie': movie, 'average_rating': average_rating, 'rating_range': rating_range, 'number_of_reviews': reviews.count})
+    return render(request, 'movie_detail.html', {'movie': movie, 'average_rating': average_rating, 'rating_range': rating_range, 'number_of_reviews': reviews.count, 'last_review': last_review})
 
 def calculate_hate_score(body):
-    my_app_config = apps.get_app_config('movies')
+    my_app_config = apps.get_app_config('ai_models')
     toxic_model = my_app_config.toxic_model
     toxic_vectorizer = my_app_config.toxic_vectorizer
     offensive_model = my_app_config.offensive_model
@@ -224,7 +225,6 @@ def update_review(request, review_id, is_draft=False):
 @login_required
 def delete_review(request, review_id):
     review = get_object_or_404(Review, id=review_id, user=request.user)
-    movie_id = review.movie.id
     if request.method == 'POST':
         review.state = Review.State.DELETED
         review.save()
@@ -254,5 +254,7 @@ def movie_reviews(request, movie_id):
 @login_required
 def view_draft_reviews(request):
     draft_reviews = Review.objects.filter(user=request.user, state=Review.State.IN_DRAFT)
+    for review in draft_reviews:
+        print(review)
     
     return render(request, 'movie_reviews.html', {'reviews': draft_reviews, 'show_drafts': True})
