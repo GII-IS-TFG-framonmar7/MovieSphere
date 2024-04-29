@@ -59,10 +59,11 @@ class Strike(models.Model):
 
                 # Force logout
                 sessions = Session.objects.filter(session_key__in=[
-                session.session_key for session in Session.objects.all()
-                if session.get_decoded().get('_auth_user_id') == str(self.user.id)
+                    session.session_key for session in Session.objects.all()
+                    if session.get_decoded().get('_auth_user_id') == str(self.user.id)
                 ])
-                sessions.delete()
+                if sessions:
+                    sessions.delete()
 
                 subject = 'Esto es embarazoso...'
                 text_content = strip_tags(render_to_string('email/ban_notification.html', {'user': self.user}))
