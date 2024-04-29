@@ -8,6 +8,7 @@ from django.utils.html import strip_tags
 from django.core.mail import EmailMultiAlternatives
 from news.models import New
 from movies.models import Review
+from django.contrib.sessions.models import Session
 
 # Create your models here.
 
@@ -55,6 +56,13 @@ class Strike(models.Model):
             if current_strikes >= 3:
                 self.user.profile.is_banned = True
                 self.user.profile.save()
+
+                # Force logout
+                sessions = Session.objects.filter(session_key__in=[
+                session.session_key for session in Session.objects.all()
+                if session.get_decoded().get('_auth_user_id') == str(self.user.id)
+                ])
+                sessions.delete()
 
                 subject = 'Esto es embarazoso...'
                 text_content = strip_tags(render_to_string('email/ban_notification.html', {'user': self.user}))
