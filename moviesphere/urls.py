@@ -21,7 +21,8 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
 from django.contrib.messages.views import SuccessMessageMixin
-from movies.views import create_review, update_review, delete_review, movie_reviews, view_draft_reviews
+from users.views import edit_profile, signin, signup, signout
+from movies.views import movies, movie_detail, create_review, update_review, delete_review, movie_reviews, view_draft_reviews
 from news.views import news, new_detail, create_new, update_new, delete_new, view_draft_news
 
 class MyPasswordChangeView(SuccessMessageMixin, auth_views.PasswordChangeView):
@@ -33,14 +34,14 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.home, name='home'),
 
-    path('edit-profile/', views.edit_profile, name='edit_profile'),
+    path('edit-profile/', edit_profile, name='edit_profile'),
     path('change-password/', auth_views.PasswordChangeView.as_view(), name='password'),
-    path('signin/', views.signin, name='signin'),
-    path('signup/', views.signup, name='signup'),
-    path('logout/', views.signout, name='logout'),
-    path('movies/', views.movies, name='movies'),
+    path('signin/', signin, name='signin'),
+    path('signup/', signup, name='signup'),
+    path('logout/', signout, name='logout'),
 
-    path('movies/<int:movie_id>/', views.movie_detail, name='movie_detail'),
+    path('movies/', movies, name='movies'),
+    path('movies/<int:movie_id>/', movie_detail, name='movie_detail'),
     path('movies/<int:movie_id>/review/draft/', create_review, {'is_draft': True}, name='save_draft'),
     path('movies/<int:movie_id>/review/publish/', create_review, name='publish_review'),
     path('review/<int:review_id>/delete/', delete_review, name='delete_review'),

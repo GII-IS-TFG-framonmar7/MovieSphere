@@ -1,20 +1,7 @@
+from django.apps import apps
 from django.db import models
-from django.utils import timezone
-from dateutil.relativedelta import relativedelta
 from django.contrib.auth.models import User
-from django.conf import settings
-from django.template.loader import render_to_string
-from django.utils.html import strip_tags
-from django.core.mail import EmailMultiAlternatives
 from django.core.exceptions import ValidationError
-from news.models import New
-
-class UserProfile(models.Model):
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='profile')
-    is_banned = models.BooleanField(default=False)
-
-    def __str__(self):
-        return self.user.username
 
 class Genre(models.Model):
     name = models.CharField(max_length=255, unique=True)
@@ -68,11 +55,13 @@ class Review(models.Model):
         
         super().save(*args, **kwargs)
 
+
         should_create_strike = (
             (is_new and self.state == self.State.FORBIDDEN) or
             (not is_new and old_state != self.state and self.state == self.State.FORBIDDEN)
         )
 
+        Strike = apps.get_model('users', 'Strike')
         # Check if a strike already exists for this review
         strike_exists = Strike.objects.filter(review=self).exists()
 
@@ -83,56 +72,6 @@ class Review(models.Model):
 
     def __str__(self):
         return f'{self.state}: {self.user.username} for {self.movie.title}'
-    
-class Strike(models.Model):    
-    date_issued = models.DateField(default=timezone.now)
-    expiration_date = models.DateField()
-    review = models.OneToOneField(Review, on_delete=models.CASCADE, null=True, related_name='strike')
-    new = models.OneToOneField(New, on_delete=models.CASCADE, null=True, related_name='strike')
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='warnings')
-
-    def save(self, *args, **kwargs):
-        if not self.pk:
-            self.expiration_date = self.date_issued + relativedelta(months=3)
-
-        is_new = self._state.adding
-        super().save(*args, **kwargs)
-
-        if is_new:
-            current_strikes = Strike.objects.filter(
-                user=self.user, 
-                date_issued__lte=timezone.now(), 
-                expiration_date__gt=timezone.now()
-            ).count()
-
-            subject = 'Incumplimiento de las políticas de comunidad'
-            if self.review:
-                text_content = strip_tags(render_to_string('email/strike_notification.html', {'user': self.user, 'sample': self.review}))
-                html_content = render_to_string('email/strike_notification.html', {'user': self.user, 'sample': self.review})
-            else:
-                text_content = strip_tags(render_to_string('email/strike_notification.html', {'user': self.user, 'sample': self.new}))
-                html_content = render_to_string('email/strike_notification.html', {'user': self.user, 'sample': self.new})
-            from_email = settings.EMAIL_HOST_USER
-            recipient_list = [self.user.email]
-            msg = EmailMultiAlternatives(subject, text_content, from_email, recipient_list)
-            msg.attach_alternative(html_content, "text/html")
-            msg.send()
-
-            if current_strikes >= 3:
-                self.user.profile.is_banned = True
-                self.user.profile.save()
-
-                subject = 'Esto es embarazoso...'
-                text_content = strip_tags(render_to_string('email/ban_notification.html', {'user': self.user}))
-                html_content = render_to_string('email/ban_notification.html', {'user': self.user})
-                from_email = settings.EMAIL_HOST_USER
-                recipient_list = [self.user.email]
-                msg = EmailMultiAlternatives(subject, text_content, from_email, recipient_list)
-                msg.attach_alternative(html_content, "text/html")
-                msg.send()
-    
-    def __str__(self):
-        return f'Strike for {self.user.username} on {self.date_issued.strftime("%Y-%m-%d")}'
     
 class Actor(models.Model):
     name = models.CharField(max_length=255)

@@ -1,6 +1,5 @@
 from django.apps import apps
 from django.db import models
-from django.utils import timezone
 from django.conf import settings
 from django.core.exceptions import ValidationError
 
@@ -49,7 +48,7 @@ class New(models.Model):
             (not is_new and old_state != self.state and self.state == self.State.FORBIDDEN)
         )
 
-        Strike = apps.get_model('movies', 'Strike')
+        Strike = apps.get_model('users', 'Strike')
         # Check if a strike already exists for this new
         strike_exists = Strike.objects.filter(new=self).exists()
 
