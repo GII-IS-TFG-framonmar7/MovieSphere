@@ -19,7 +19,7 @@ class Movie(models.Model):
     budget = models.DecimalField(max_digits=12, decimal_places=2)
     revenue = models.DecimalField(max_digits=12, decimal_places=2)
     genres = models.ManyToManyField(Genre, related_name='movies')
-    actors = models.ManyToManyField('Actor', through='Performance')
+    actors = models.ManyToManyField('analysis.Actor', through='Performance')
 
     def __str__(self):
         return self.title
@@ -73,18 +73,9 @@ class Review(models.Model):
     def __str__(self):
         return f'{self.state}: {self.user.username} for {self.movie.title}'
     
-class Actor(models.Model):
-    name = models.CharField(max_length=255)
-    birthday = models.DateField()
-    nationality = models.CharField(max_length=255)
-    principalImage = models.ImageField(upload_to='images/')
-
-    def __str__(self):
-        return self.name
-    
 class Performance(models.Model):
     movie = models.ForeignKey(Movie, on_delete=models.CASCADE)
-    actor = models.ForeignKey(Actor, on_delete=models.CASCADE)
+    actor = models.ForeignKey('analysis.Actor', on_delete=models.CASCADE)
     characterName = models.CharField(max_length=255)
 
     def __str__(self):

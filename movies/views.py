@@ -1,6 +1,6 @@
 from django.apps import apps
 from django.shortcuts import get_object_or_404, render, redirect
-from .models import Movie, Genre, Review
+from .models import Movie, Genre, Review, Image
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from django.contrib import messages
@@ -8,7 +8,28 @@ from django.db.models import Avg
 from django.http import JsonResponse
 
 def home(request):
-    return render(request, 'home.html')
+    # Obtener modelos de las aplicaciones
+    New = apps.get_model('news', 'New')
+    Review = apps.get_model('movies', 'Review')
+    Image = apps.get_model('movies', 'Image')
+    
+    # Obtener conjuntos de consultas
+    new_queryset = New.objects.filter().order_by('-publicationDate').distinct()[:1]  # Última noticia
+    reviews_queryset = Review.objects.filter().order_by('-publicationDate').distinct()[:2]  # Últimas 2 reseñas
+    images_queryset = Image.objects.filter().distinct()  # Todas las imágenes para el carrusel
+
+    # Crear listas para el contexto
+    latest_new = new_queryset.first() if new_queryset else None
+    reviews_list = [{'movie': review.movie, 'user': review.user, 'body': review.body, 'rating': review.rating, 'publicationDate': review.publicationDate} for review in reviews_queryset]
+    images_list = [{'index': index + 1, 'url': image.url} for index, image in enumerate(images_queryset)]
+
+    context = {
+        'latest_new': latest_new,
+        'latest_reviews': reviews_list,
+        'carousel_images': images_list,
+    }
+
+    return render(request, 'home.html', context)
               
 def movies(request):
     filter_params = {}

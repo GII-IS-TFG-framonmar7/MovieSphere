@@ -1,0 +1,33 @@
+{% extends 'base.html' %} {% block content %}
+
+<div class="container p-4 bg-light">
+  <div class="row mb-5 justify-content-center">
+    <div class="col-md-6 text-center">
+      <img
+        src="{{ actor.principalImage.url }}"
+        alt="{{ actor.name }}"
+        class="img-fluid rounded shadow"
+      />
+    </div>
+    <div
+      class="col-md-6 d-flex flex-column justify-content-between text-center"
+    >
+      <div>
+        <h1 class="mb-3 text-center">{{ actor.name }}</h1>
+
+        <div class="mt-3 text-left pl-3">
+          <p class="font-weight-bold">
+            Nombre:
+            <span class="font-weight-normal">{{ actor.name }}</span>
+          </p>
+          <p class="font-weight-bold">
+            Género:
+            <span class="font-weight-normal">{{ actor.gender }}</span>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

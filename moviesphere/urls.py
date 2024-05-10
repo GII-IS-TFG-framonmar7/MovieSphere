@@ -24,6 +24,7 @@ from django.contrib.messages.views import SuccessMessageMixin
 from users.views import edit_profile, signin, signup, signout
 from movies.views import movies, movie_detail, create_review, update_review, delete_review, movie_reviews, view_draft_reviews
 from news.views import news, new_detail, create_new, update_new, delete_new, view_draft_news
+from analysis.views import actors, actor_detail
 
 class MyPasswordChangeView(SuccessMessageMixin, auth_views.PasswordChangeView):
     template_name = 'change_password.html'
@@ -49,6 +50,9 @@ urlpatterns = [
     path('review/<int:review_id>/update/publish/', update_review, name='update_publish_review'),
     path('movies/<int:movie_id>/reviews/', movie_reviews, name='movie_reviews'),
     path('reviews/drafts/', view_draft_reviews, name='draft_reviews'),
+
+    path('actors/', actors, name='actors'),
+    path('actors/<int:actor_id>/', actor_detail, name='actor_detail'),
 
     path('news/', news, name='news'),
     path('news/<int:new_id>/', new_detail, name='new_detail'),
