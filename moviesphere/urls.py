@@ -21,7 +21,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
 from django.contrib.messages.views import SuccessMessageMixin
-from users.views import edit_profile, signin, signup, signout
+from users.views import edit_profile, signin, signup, signout, change_password, about_us
 from movies.views import movies, movie_detail, create_review, update_review, delete_review, movie_reviews, view_draft_reviews
 from news.views import news, new_detail, create_new, update_new, delete_new, view_draft_news
 from analysis.views import actors, actor_detail
@@ -36,10 +36,12 @@ urlpatterns = [
     path('', views.home, name='home'),
 
     path('edit-profile/', edit_profile, name='edit_profile'),
-    path('change-password/', auth_views.PasswordChangeView.as_view(), name='password'),
+    path('change-password/', auth_views.PasswordChangeView.as_view(), name='password_change'),
+    path('change-password/done/', change_password, name='password_change_done'),
     path('signin/', signin, name='signin'),
     path('signup/', signup, name='signup'),
     path('logout/', signout, name='logout'),
+    path('about_us', about_us, name="about_us"),
 
     path('movies/', movies, name='movies'),
     path('movies/<int:movie_id>/', movie_detail, name='movie_detail'),

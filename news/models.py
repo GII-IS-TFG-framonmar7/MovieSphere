@@ -3,8 +3,6 @@ from django.db import models
 from django.conf import settings
 from django.core.exceptions import ValidationError
 
-# Create your models here.
-
 class Category(models.Model):
     name = models.CharField(max_length=100)
 
@@ -38,6 +36,8 @@ class New(models.Model):
         if not is_new:
             old_new = New.objects.get(pk=self.pk)
             old_state = old_new.state
+            if old_new.photo and old_new.photo != self.photo:
+                old_new.photo.delete(save=False)
         else:
             old_state = None
         

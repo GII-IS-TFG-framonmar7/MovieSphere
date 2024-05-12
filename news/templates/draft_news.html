@@ -1,6 +1,6 @@
-{% extends 'base.html' %} {% load i18n %} {% block content %} 
+{% extends 'base.html' %} {% load i18n %} {% block content %}
 
-<div class="container mt-3">
+<div class="container bg-light">
   {% if messages %} {% for message in messages %}
   <div
     class="alert alert-{{ message.tags }} alert-dismissible fade show"
@@ -11,33 +11,29 @@
       <span aria-hidden="true">&times;</span>
     </button>
   </div>
-
-  <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      $(".alert")
-        .fadeTo(2000, 500)
-        .slideUp(500, function () {
-          $(".alert").slideUp(500);
-        });
-    });
-  </script>
   {% endfor %} {% endif %}
 
   <div class="row mb-5">
-    <div class="col text-center">
+    <div class="col text-center mt-3">
       <h1>{% trans "Mis noticias en borrador" %}</h1>
     </div>
   </div>
   <div class="row">
     {% for new in news %}
-    <div class="col-md-6 col-lg-4 mb-4">
-      <div class="card h-100 shadow hover-animate">
+    <div class="col-12 col-sm-6 col-md-4 mb-4">
+      <div class="card h-100 d-flex flex-column">
         <!-- Imagen de la noticia -->
-        <img src="{{ new.photo.url }}" class="card-img-top img-fluid" alt="{{ new.title }}" style="height: 60%; object-fit: cover;">
-        <div class="card-body">
-          <h5 class="card-title text-truncate">{{ new.title }}</h5>
-          <!-- Botones de acción -->
-          <div class="d-flex justify-content-between mt-4 mb-4">
+        <div style="position: relative; padding-top: 56.25%;">
+          <img
+            src="{{ new.photo.url }}"
+            class="card-img-top"
+            alt="{{ new.title }}"
+            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;"
+          />
+        </div>
+        <div class="card-body d-flex flex-column">
+          <h5 class="card-title text-center">{{ new.title }}</h5>
+          <div class="mt-auto d-flex justify-content-between">
             <button
               type="button"
               class="btn btn-primary"
@@ -57,151 +53,165 @@
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Edit new modal -->
-    <div
-      class="modal fade"
-      id="editNewModal-{{ new.id }}"
-      tabindex="-1"
-      aria-labelledby="editNewModalLabel-{{ new.id }}"
-      aria-hidden="true"
-    >
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="modalLabel">Editar noticia</h5>
-            <button
-              type="button"
-              class="btn-close"
-              data-bs-dismiss="modal"
-              aria-label="Cerrar"
-            ></button>
-          </div>
-          <div class="modal-body">
-            <form
-              id="newForm-{{ new.id }}"
-              action="{% url 'update_draft_new' new.id %}"
-              method="post"
-              enctype="multipart/form-data"
-            >
-              {% csrf_token %}
-              <div class="mb-3">
-                <label for="title-{{ new.id }}" class="form-label"
-                  >Título de la noticia</label
-                >
-                <input
-                  type="text"
-                  class="form-control"
-                  id="title-{{ new.id }}"
-                  name="title"
-                  value="{{ new.title }}"
-                  required
-                />
-              </div>
-              <div class="mb-3">
-                <label for="body-{{ new.id }}" class="form-label"
-                  >Cuerpo de la noticia</label
-                >
-                <textarea
-                  class="form-control"
-                  id="body-{{ new.id }}"
-                  name="body"
-                  rows="5"
-                  required
-                >{{ new.body }}</textarea
-                >
-              </div>
-              <div class="mb-3">
-                <label for="category-{{ new.id }}" class="form-label">Categoría</label>
-                <select
-                  class="form-select"
-                  id="category-{{ new.id }}"
-                  name="category"
-                  required
-                >
-                  {% for category in categories %}
-                    <option value="{{ category.id }}" {% if new.category.id == category.id %}selected{% endif %}>{{ category.name }}</option>
-                  {% endfor %}
-                </select>
-              </div>
-              <div class="mb-3">
-                <label for="photo-{{ new.id }}" class="form-label"
-                  >Foto de la noticia</label
-                >
-                <input
-                  type="file"
-                  class="form-control"
-                  id="photo-{{ new.id }}"
-                  name="photo"
-                />
-              </div>
-              <button type="submit" class="btn btn-primary" formaction="{% url 'update_draft_new' new.id %}">
-                Actualizar noticia
-              </button>
+      <!-- Edit new modal -->
+      <div
+        class="modal fade"
+        id="editNewModal-{{ new.id }}"
+        tabindex="-1"
+        aria-labelledby="editNewModalLabel-{{ new.id }}"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="modalLabel">Editar noticia</h5>
               <button
-                type="submit"
-                class="btn btn-success"
-                formaction="{% url 'update_publish_new' new.id %}"
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Cerrar"
+              ></button>
+            </div>
+            <div class="modal-body">
+              <form
+                id="newForm-{{ new.id }}"
+                action="{% url 'update_draft_new' new.id %}"
+                method="post"
+                enctype="multipart/form-data"
               >
-                Publicar noticia
-              </button>
-            </form>
+                {% csrf_token %}
+                <div class="mb-3">
+                  <label for="title-{{ new.id }}" class="form-label"
+                    >Título de la noticia</label
+                  >
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="title-{{ new.id }}"
+                    name="title"
+                    value="{{ new.title }}"
+                    required
+                  />
+                </div>
+                <div class="mb-3">
+                  <label for="body-{{ new.id }}" class="form-label"
+                    >Cuerpo de la noticia</label
+                  >
+                  <textarea
+                    class="form-control"
+                    id="body-{{ new.id }}"
+                    name="body"
+                    rows="5"
+                    required
+                  >{{ new.body }}</textarea
+                  >
+                </div>
+                <div class="mb-3">
+                  <label for="category-{{ new.id }}" class="form-label">Categoría</label>
+                  <select
+                    class="form-select"
+                    id="category-{{ new.id }}"
+                    name="category"
+                    required
+                  >
+                    {% for category in categories %}
+                      <option value="{{ category.id }}" {% if new.category.id == category.id %}selected{% endif %}>{{ category.name }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="mb-3">
+                  <label for="photo-{{ new.id }}" class="form-label"
+                    >Foto de la noticia</label
+                  >
+                  <input
+                    type="file"
+                    class="form-control"
+                    id="photo-{{ new.id }}"
+                    name="photo"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  class="btn btn-primary"
+                  formaction="{% url 'update_draft_new' new.id %}"
+                >
+                  Actualizar noticia
+                </button>
+                <button
+                  type="submit"
+                  class="btn btn-success"
+                  formaction="{% url 'update_publish_new' new.id %}"
+                >
+                  Publicar noticia
+                </button>
+              </form>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Delete new modal -->
-    <div
-      class="modal fade"
-      id="deleteNewModal-{{ new.id }}"
-      tabindex="-1"
-      role="dialog"
-      aria-labelledby="modalLabel-{{ new.id }}"
-      aria-hidden="true"
-    >
-      <div class="modal-dialog" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="modalLabel-{{ new.id }}">
-              {% trans "Confirmar Eliminación" %}
-            </h5>
-            <button
-              type="button"
-              class="close"
-              data-dismiss="modal"
-              aria-label="Close"
-            >
-              <span aria-hidden="true">&times;</span>
-            </button>
-          </div>
-          <div class="modal-body">
-            {% trans "¿Estás seguro de que deseas eliminar esta noticia?" %}
-          </div>
-          <div class="modal-footer">
-            <button
-              type="button"
-              class="btn btn-secondary"
-              data-dismiss="modal"
-            >
-              {% trans "Cancelar" %}
-            </button>
-            <form method="POST" action="{% url 'delete_new' new.id %}">
-              {% csrf_token %}
-              <button type="submit" class="btn btn-danger">
-                {% trans "Eliminar" %}
+      <!-- Delete new modal -->
+      <div
+        class="modal fade"
+        id="deleteNewModal-{{ new.id }}"
+        tabindex="-1"
+        role="dialog"
+        aria-labelledby="modalLabel-{{ new.id }}"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="modalLabel-{{ new.id }}">
+                {% trans "Confirmar Eliminación" %}
+              </h5>
+              <button
+                type="button"
+                class="close"
+                data-dismiss="modal"
+                aria-label="Close"
+              >
+                <span aria-hidden="true">&times;</span>
               </button>
-            </form>
+            </div>
+            <div class="modal-body">
+              {% trans "¿Estás seguro de que deseas eliminar esta noticia?" %}
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-dismiss="modal"
+              >
+                {% trans "Cancelar" %}
+              </button>
+              <form method="POST" action="{% url 'delete_new' new.id %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">
+                  {% trans "Eliminar" %}
+                </button>
+              </form>
+            </div>
           </div>
         </div>
       </div>
     </div>
     {% empty %}
-    <p class="text-center">{% trans "No tienes noticias en borrador." %}</p>
+    <p class="text-center p-3">{% trans "No tienes noticias en borrador." %}</p>
     {% endfor %}
   </div>
 </div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    $(".alert")
+      .fadeTo(2000, 500)
+      .slideUp(500, function () {
+        $(".alert").slideUp(500);
+      });
+  });
+</script>
 
 <script type="text/javascript">
   $(document).ready(function() {

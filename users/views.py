@@ -3,7 +3,7 @@ from django.contrib.auth import login, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
 from django.db import IntegrityError
-from django.contrib.auth import update_session_auth_hash
+from django.contrib import messages
 from .forms import UserEditForm, CustomUserCreationForm
 from django.contrib.auth import logout
 
@@ -62,15 +62,21 @@ def signout(request):
 def edit_profile(request):
     if request.method == 'POST':
         form = UserEditForm(request.POST, instance=request.user)
+
         if form.is_valid():
-            user = form.save(commit=False)
-            new_password = form.cleaned_data['password']
-            if new_password:
-                user.set_password(new_password)
-            user.save()
-            update_session_auth_hash(request, user)
-            return redirect('home')
+            form.save()
+            messages.success(request, '¡Tu perfil ha sido actualizado con éxito!')
+
+        return redirect('home')
+
     else:
         form = UserEditForm(instance=request.user)
 
     return render(request, 'edit_profile.html', {'form': form})
+
+def change_password(request):
+    messages.success(request, "¡Tu contraseña ha sido cambiada con éxito!")
+    return redirect(('signin'))
+
+def about_us(request):
+    return render(request, 'about_us.html')

@@ -4,7 +4,7 @@
 
 <div class="container p-4 bg-light">
     <form method="get" action=".">
-        <div class="d-flex align-items-center row mb-5">
+        <div class="align-items-center row mb-5">
             <div class="col-sm">
                 <label for="category" class="form-label"><i class="bi bi-filter"></i> Categoría:</label>
                 <select class="form-select shadow-sm rounded" name="category" id="category">
@@ -18,10 +18,10 @@
                 <input type="text" class="form-control shadow-sm rounded" id="title" name="title" placeholder="Título de la noticia" value="{{ request.GET.title|default_if_none:'' }}">
             </div>
             {% if user_is_writer %}
-            <div class="mb-3 text-end">
+            <div class="col-sm">
                 <button
                 type="button"
-                class="btn btn-outline-primary"
+                class="btn btn-outline-primary float-right"
                 data-toggle="modal"
                 data-target="#modalWriteNew"
                 >
@@ -44,20 +44,25 @@
     {% endfor %} {% endif %}
 
     <div class="row" id="results">
-        {% for new in news %}
-        <div class="col-md-6 col-lg-4 mb-3">
-            <div class="card h-100 shadow hover-animate">
-                <img src="{{ new.photo.url }}" class="card-img-top" alt="{{ new.title }}">
-                <div class="card-body">
-                    <h5 class="card-title">{{ new.title }}</h5>
-                    <a href="{% url 'new_detail' new_id=new.id %}" class="btn btn-primary rounded">Más información</a>
-                </div>
-            </div>
-        </div>
-        {% empty %}
-        <p>No se encontraron noticias.</p>
-        {% endfor %}
-    </div>
+      {% for new in news %}
+      <div class="col-md-6 col-lg-4 mb-3">
+          <div class="card h-100 d-flex flex-column">
+              <div style="position: relative; padding-top: 56.25%;">
+                  <img src="{{ new.photo.url }}" class="card-img-top" alt="{{ new.title }}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;">
+              </div>
+              <div class="card-body d-flex flex-column">
+                  <h5 class="card-title text-center">{{ new.title }}</h5>
+                  <div class="mt-auto d-flex justify-content-center">
+                      <a href="{% url 'new_detail' new_id=new.id %}" class="btn btn-primary rounded" style="width: fit-content;">Más información</a>
+                  </div>
+              </div>
+          </div>
+      </div>
+      {% empty %}
+      <p class="text-center p-3">No se encontraron noticias.</p>
+      {% endfor %}
+  </div>
+   
 </div>
 
 <!-- Modal fade -->
@@ -133,35 +138,44 @@
 </script>
 
 <script>
-    $(document).ready(function(){
+  $(document).ready(function(){
       $('#category, #title').on('change keyup', function() {
-        var category = $('#category').val();
-        var title = $('#title').val();
-        $.ajax({
-            url: '',
-            data: {
-              'category': $('#category').val(),
-              'title': $('#title').val(),
-            },
-            dataType: 'json',
-            success: function(data) {
-              var newsHtml = '';
-              $.each(data.news, function(index, newsItem) {
-                var detailUrl = '/news/' + newsItem.id + '/';
-                newsHtml += '<div class="col-md-6 col-lg-4 mb-3">' +
-                    '<div class="card h-100 shadow hover-animate">' +
-                        '<img src="' + newsItem.image + '" class="card-img-top" alt="' + newsItem.title + '">' +
-                        '<div class="card-body">' +
-                            '<h5 class="card-title">' + newsItem.title + '</h5>' +
-                            '<a href="' + detailUrl + '" class="btn btn-primary rounded">Más información</a>' +
-                        '</div></div></div>';
-              });
-              $('#results').html(newsHtml);
-            }
+          var category = $('#category').val();
+          var title = $('#title').val();
+          $.ajax({
+              url: '',
+              data: {
+                  'category': category,
+                  'title': title
+              },
+              dataType: 'json',
+              success: function(data) {
+                  var newsHtml = '';
+                  if (data.news.length > 0) {
+                    $.each(data.news, function(index, newsItem) {
+                        var detailUrl = '/news/' + newsItem.id + '/';
+                        newsHtml += '<div class="col-md-6 col-lg-4 mb-3">' +
+                            '<div class="card h-100 d-flex flex-column">' +
+                                '<div style="position: relative; padding-top: 56.25%;">' +
+                                    '<img src="' + newsItem.image + '" class="card-img-top" alt="' + newsItem.title + '" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;">' +
+                                '</div>' +
+                                '<div class="card-body d-flex flex-column">' +
+                                    '<h5 class="card-title text-center">' + newsItem.title + '</h5>' +
+                                    '<div class="mt-auto d-flex justify-content-center">' +
+                                        '<a href="' + detailUrl + '" class="btn btn-primary rounded" style="width: fit-content;">Más información</a>' +
+                                    '</div>' +
+                                '</div>' +
+                            '</div>' +
+                        '</div>';
+                    });
+                  } else {
+                    newsHtml += '<p>No se encontraron noticias.</p>';
+                  }
+                  $('#results').html(newsHtml);
+              }
           });
-          
       });
-    });
+  });
 </script>
 
 {% endblock %}

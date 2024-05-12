@@ -15,7 +15,8 @@
 
   <div class="row justify-content-center">
     <div class="col-12 col-lg-10">
-      <h1 class="mb-4 text-center font-weight-normal">{{ new.title }}</h1>
+      <h1 class="mb-4 text-center font-weight-bold">{{ new.title }}</h1>
+      <h6 class="text-center text-muted mb-3">Categoría: {{ new.category.name }}</h6>
       <div class="text-center">
         <img
           src="{{ new.photo.url }}"
@@ -23,7 +24,7 @@
           class="img-fluid"
         />
       </div>
-      <p class="mt-4">{{ new.body }}</p>
+      <p class="mt-4">{{ new.body|linebreaksbr }}</p>
     </div>
   </div>
 </div>

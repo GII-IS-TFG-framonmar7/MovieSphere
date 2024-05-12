@@ -2,6 +2,7 @@ from django.apps import apps
 from django.db import models
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
+from djmoney.models.fields import MoneyField
 
 class Genre(models.Model):
     name = models.CharField(max_length=255, unique=True)
@@ -16,10 +17,20 @@ class Movie(models.Model):
     image = models.ImageField(upload_to='images/')
     duration = models.PositiveIntegerField(help_text="Duración en minutos")
     country = models.CharField(max_length=255)
-    budget = models.DecimalField(max_digits=12, decimal_places=2)
-    revenue = models.DecimalField(max_digits=12, decimal_places=2)
+    budget = MoneyField(max_digits=14, decimal_places=2, default_currency='USD')
+    revenue = MoneyField(max_digits=14, decimal_places=2, default_currency='USD')
     genres = models.ManyToManyField(Genre, related_name='movies')
     actors = models.ManyToManyField('analysis.Actor', through='Performance')
+
+    def save(self, *args, **kwargs):
+        is_new = self.pk is None
+
+        if not is_new:
+            old_movie = Movie.objects.get(pk=self.pk)
+            if old_movie.image and old_movie.image != self.image:
+                old_movie.image.delete(save=False)
+        
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.title
@@ -83,3 +94,13 @@ class Performance(models.Model):
     
 class Image(models.Model):
     url = models.ImageField(upload_to='images/')
+
+    def save(self, *args, **kwargs):
+        is_new = self.pk is None
+
+        if not is_new:
+            old_image = Image.objects.get(pk=self.pk)
+            if old_image.url and old_image.url != self.url:
+                old_image.url.delete(save=False)
+        
+        super().save(*args, **kwargs)

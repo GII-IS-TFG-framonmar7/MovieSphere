@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block content %}
+
+<div class="container p-4 bg-white shadow">
+  <div class="row">
+    <div class="col-lg-8 mx-auto">
+      <h1 class="mb-4 text-center">Sobre Nosotros</h1>
+      <img src="{% static 'logo.png' %}" alt="Nuestro Equipo" class="img-fluid rounded mb-4">
+      <p class="text-justify">
+        <strong>MovieSphere</strong> es un sitio web dedicado a ofrecer análisis exhaustivos, noticias de última hora y todo lo relacionado con el cine y la televisión. Desde nuestro lanzamiento en 2015, hemos crecido hasta convertirnos en una de las fuentes más confiables para los aficionados al cine y la televisión alrededor del mundo.
+      </p>
+      <h3>Nuestro Equipo</h3>
+      <p>Contamos con un equipo diverso de críticos, redactores y cineastas que comparten una pasión común: el amor por el cine. Nuestro objetivo es traer perspectivas frescas y profundas sobre lo que ocurre tanto delante como detrás de las cámaras.</p>
+      <h3>Nuestra Misión</h3>
+      <p>
+        Nuestra misión es informar, inspirar y entretener a nuestros lectores con contenido relevante y de calidad. Nos esforzamos por ser precisos en nuestros reportajes y ofrecer contenido que no solo entretenga, sino que también enriquezca.
+      </p>
+      <h3>Contacto</h3>
+      <p>Para más información, preguntas o sugerencias, no dudes en contactarnos a través de nuestro formulario de contacto o por redes sociales.</p>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

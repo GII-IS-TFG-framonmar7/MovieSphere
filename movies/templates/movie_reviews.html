@@ -5,7 +5,7 @@
 
 {% block content %}
 
-<div class="container mt-3">
+<div class="container bg-light">
   {% if messages %} {% for message in messages %}
   <div
     class="alert alert-{{ message.tags }} alert-dismissible fade show"
@@ -16,21 +16,11 @@
       <span aria-hidden="true">&times;</span>
     </button>
   </div>
-
-  <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      $(".alert")
-        .fadeTo(2000, 500)
-        .slideUp(500, function () {
-          $(".alert").slideUp(500);
-        });
-    });
-  </script>
   {% endfor %} {% endif %}
   {% if not show_drafts %}
     <div class="container mb-3">
       <div class="row">
-        <div class="col text-center">
+        <div class="col text-center mt-3">
             <h1>{{ movie.title }}</h1>
         </div>
       </div>
@@ -53,9 +43,9 @@
   {% endif %}
 
   <div class="row mb-5">
-    <div class="col text-center">
+    <div class="col text-center mt-3">
         {% if show_drafts %}
-            <h1>{% trans "Mis Reseñas en Borrador" %}</h1>
+            <h1>{% trans "Mis reseñas en borrador" %}</h1>
         {% endif %}
     </div>
   </div>
@@ -87,14 +77,14 @@
   
             <!-- Botones de acción, si aplica -->
             {% if show_drafts or review.state == Review.State.PUBLISHED %}
-              <div class="d-flex justify-content-between">
-                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#editReviewModal-{{ review.id }}">
-                  {% trans "Editar" %}
-                </button>
-                <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#deleteReviewModal-{{ review.id }}">
-                  {% trans "Eliminar" %}
-                </button>
-              </div>
+            <div class="mt-auto d-flex justify-content-between">
+              <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#editReviewModal-{{ review.id }}">
+                {% trans "Editar" %}
+              </button>
+              <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#deleteReviewModal-{{ review.id }}">
+                {% trans "Eliminar" %}
+              </button>
+            </div>
             {% endif %}
           </div>
         </div>
@@ -156,7 +146,7 @@
         </div>
       </div>
     {% empty %}
-      <p class="text-center">
+      <p class="text-center p-3">
         {% if show_drafts %}
           {% trans "No tienes reseñas en borrador." %}
         {% else %}
@@ -166,6 +156,16 @@
     {% endfor %}
   </div>
 </div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    $(".alert")
+      .fadeTo(2000, 500)
+      .slideUp(500, function () {
+        $(".alert").slideUp(500);
+      });
+  });
+</script>
 
 <!-- Script that handles the number of stars -->
 <script type="text/javascript">
