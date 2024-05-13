@@ -5,8 +5,10 @@ from .models import New, Category
 from django.utils import timezone
 from django.contrib import messages
 from django.http import JsonResponse
-from .models import New
+from .models import New, Category
 from django.contrib.auth.decorators import login_required
+from django.template.loader import render_to_string
+from .forms import CategoryForm
 
 # Create your views here.
 
@@ -168,3 +170,67 @@ def view_draft_news(request):
     categories = Category.objects.all()
     
     return render(request, 'draft_news.html', {'news': news, 'categories': categories})
+
+def load_category_data(request):
+    categories = Category.objects.all()
+    return JsonResponse({
+        'html': render_to_string('partials/category_list.html', {'categories': categories}, request=request)
+    })
+
+def category_create(request):
+    if request.method == 'POST':
+        form = CategoryForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return JsonResponse({
+                'form_is_valid': True,
+                'html_category_list': render_to_string('partials/category_list.html', {
+                    'categories': Category.objects.all()
+                })
+            })
+        else:
+            return JsonResponse({
+                'form_is_valid': False,
+                'is_creating': True,
+                'html_form': render_to_string('partials/category_form.html', {
+                    'form': form,
+                    'is_creating': True
+                })
+            })
+    else:
+        form = CategoryForm()
+        html_form = render_to_string('partials/category_form.html', {
+            'form': form,
+            'is_creating': True
+        })
+        return JsonResponse({'html_form': html_form})
+
+def category_update(request, id):
+    category = Category.objects.get(pk=id)
+    if request.method == 'POST':
+        form = CategoryForm(request.POST, instance=category)
+        if form.is_valid():
+            form.save()
+            return JsonResponse({'form_is_valid': True})
+        else:
+            return JsonResponse({
+                'form_is_valid': False,
+                'is_creating': False,
+                'category_id': category.id,
+                'html_form': render_to_string('partials/category_form.html', {
+                    'form': form,
+                    'is_creating': False
+                })
+            })
+    else:
+        form = CategoryForm(instance=category)
+        html_form = render_to_string('partials/category_form.html', {
+            'form': form,
+            'is_creating': False
+        })
+        return JsonResponse({'html_form': html_form})
+
+def category_delete(request, id):
+    category = Category.objects.get(id=id)
+    category.delete()
+    return JsonResponse({'success': True})

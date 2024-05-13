@@ -5,6 +5,13 @@
 <div class="container p-4 bg-light">
     <form method="get" action=".">
         <div class="align-items-center row mb-5">
+            {% if user_is_writer %}
+            <div class="col-sm">
+              <button type="button" class="btn btn-info" data-toggle="modal" data-target="#categoryModal">
+                Gestionar Categorías
+              </button>
+            </div>
+            {% endif %}
             <div class="col-sm">
                 <label for="category" class="form-label"><i class="bi bi-filter"></i> Categoría:</label>
                 <select class="form-select shadow-sm rounded" name="category" id="category">
@@ -21,7 +28,7 @@
             <div class="col-sm">
                 <button
                 type="button"
-                class="btn btn-outline-primary float-right"
+                class="btn btn-outline-primary"
                 data-toggle="modal"
                 data-target="#modalWriteNew"
                 >
@@ -65,7 +72,7 @@
    
 </div>
 
-<!-- Modal fade -->
+<!-- Modal to write a new review -->
 <div
   class="modal fade"
   id="modalWriteNew"
@@ -127,6 +134,23 @@
   </div>
 </div>
 
+<!-- Modal for category operations -->
+<div class="modal fade" id="categoryModal" tabindex="-1" role="dialog" aria-labelledby="categoryModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="categoryModalLabel">Gestión de Categorías</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>            
+          </div>
+          <div class="modal-body">
+              <!-- Dynamic content -->
+          </div>
+      </div>
+  </div>
+</div>
+
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     $(".alert")
@@ -169,13 +193,105 @@
                         '</div>';
                     });
                   } else {
-                    newsHtml += '<p>No se encontraron noticias.</p>';
+                    newsHtml += '<p class="text-center p-3">No se encontraron noticias.</p>';
                   }
                   $('#results').html(newsHtml);
               }
           });
       });
   });
+</script>
+
+<script>
+  $(function () {
+      $.ajaxSetup({
+        beforeSend: function(xhr, settings) {
+            if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+                xhr.setRequestHeader("X-CSRFToken", $('input[name="csrfmiddlewaretoken"]').val());
+            }
+        }
+    });
+
+    $('#categoryModal').on('show.bs.modal', function () {
+        $.ajax({
+            url: "{% url 'category_load' %}",
+            type: 'get',
+            dataType: 'json',
+            success: function (data) {
+                $('#categoryModal .modal-body').html(data.html);
+            }
+        });
+    });
+
+    $(document).on('click', '#add-category', function () {
+      $.ajax({
+          url: "{% url 'category_create' %}",
+          type: 'get',
+          success: function (data) {
+              $('#categoryModal .modal-body').html(data.html_form);
+              $('#categoryModal').modal('show');
+              $('#category-form').attr('action', "{% url 'category_create' %}");
+          }
+      });
+    });
+  
+    $(document).on('click', '.edit-category', function () {
+        var categoryId = $(this).data('id');
+        $.ajax({
+            url: `/category/update/${categoryId}/`, 
+            type: 'get',
+            success: function (data) {
+                $('#categoryModal .modal-body').html(data.html_form);
+                $('#categoryModal').modal('show');
+                $('#category-form').attr('action', `/category/update/${categoryId}/`);
+            }
+        });
+    });
+
+    $(document).on('click', '.delete-category', function () {
+      var id = $(this).data('id');
+      if(confirm("¿Estás seguro de que deseas eliminar esta categoría?")) {
+          $.ajax({
+              url: `/category/delete/${id}/`,
+              type: 'post',
+              data: {
+                  csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val(),
+              },
+              dataType: 'json',
+              success: function (data) {
+                  if (data.success) {
+                      $('#categoryModal').modal('hide');
+                      location.reload();
+                  }
+              }
+          });
+      }
+    });
+
+    $(document).on('submit', '#category-form', function(e) {
+      e.preventDefault();
+      var formData = $(this).serialize();
+      $.ajax({
+          type: 'POST',
+          url: $(this).attr('action'),
+          data: formData,
+          dataType: 'json',
+          success: function(data) {
+              if (data.form_is_valid) {
+                  $('#categoryModal .modal-body').html(data.html_category_list);
+                  $('#categoryModal').modal('hide');
+                  location.reload();
+              } else {
+                  $('#categoryModal .modal-body').html(data.html_form);
+                  $('#categoryModal').find('input, textarea, select').first().focus();
+                  var actionUrl = data.is_creating ? "{% url 'category_create' %}" : `/category/update/${data.category_id}/`;
+                  $('#category-form').attr('action', actionUrl);
+              }
+          }
+      });
+    });
+});
+
 </script>
 
 {% endblock %}

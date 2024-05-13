@@ -1,0 +1,25 @@
+<form id="category-form" method="post">
+    {% csrf_token %}
+    <div class="modal-header">
+        <h5 class="modal-title">{{ is_creating|yesno:"Crear Categoría,Editar Categoría" }}</h5>
+    </div>
+    <div class="modal-body">
+        {{ form.as_p }}
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary back-to-list">Atrás</button>
+        <button type="submit" class="btn btn-primary">{{ is_creating|yesno:"Crear,Actualizar" }}</button>
+    </div>
+</form>
+
+<script>
+    $(document).on('click', '.back-to-list', function() {
+        $.ajax({
+            url: "{% url 'category_load' %}",
+            type: 'get',
+            success: function(data) {
+                $('#categoryModal .modal-body').html(data.html);
+            }
+        });
+    });
+</script>
