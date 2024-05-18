@@ -4,6 +4,9 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from djmoney.models.fields import MoneyField
 
+def movie_directory_path(instance, filename):
+    return f'images/movies/{instance.movie.id}/{filename}'
+
 class Genre(models.Model):
     name = models.CharField(max_length=255, unique=True)
 
@@ -88,6 +91,7 @@ class Performance(models.Model):
     movie = models.ForeignKey(Movie, on_delete=models.CASCADE)
     actor = models.ForeignKey('analysis.Actor', on_delete=models.CASCADE)
     characterName = models.CharField(max_length=255)
+    screenTime = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
 
     def __str__(self):
         return f'{self.actor.name} as {self.characterName} in {self.movie.title}'
