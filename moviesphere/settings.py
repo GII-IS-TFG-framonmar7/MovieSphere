@@ -46,8 +46,8 @@ INSTALLED_APPS = [
     'users',
     'movies',
     'news',
-    'analysis',
-    'ai_models'
+    'ai_models',
+    'commands'
 ]
 
 MIDDLEWARE = [

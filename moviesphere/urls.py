@@ -22,9 +22,8 @@ from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
 from django.contrib.messages.views import SuccessMessageMixin
 from users.views import edit_profile, signin, signup, signout, change_password, about_us
-from movies.views import movies, movie_detail, create_review, update_review, delete_review, movie_reviews, view_draft_reviews
+from movies.views import movies, movie_detail, create_review, update_review, delete_review, movie_reviews, view_draft_reviews, actors, actor_detail
 from news.views import news, new_detail, create_new, update_new, delete_new, view_draft_news, load_category_data, category_create, category_update, category_delete
-from analysis.views import actors, actor_detail
 
 class MyPasswordChangeView(SuccessMessageMixin, auth_views.PasswordChangeView):
     template_name = 'change_password.html'

@@ -1,7 +1,7 @@
 from django.apps import apps
 from django.dispatch import receiver
 from django.db.models.signals import post_save, post_delete
-from .models import Image, Movie, Performance
+from .models import Image, Movie, Performance, Actor
 from .utils import delete_images
 import os
 from django.conf import settings
@@ -30,6 +30,9 @@ def delete_movie_images(sender, instance, **kwargs):
 
 @receiver(post_save, sender=Performance)
 def performance_post_save(sender, instance, created, **kwargs):
+    if instance.screenTime:
+        return
+    
     post_save.disconnect(performance_post_save, sender=Performance)
 
     try:
@@ -115,3 +118,7 @@ def appmodel_delete_images(sender, **kwargs):
 @receiver(post_delete, sender=Movie)
 def appmodel_delete_images(sender, **kwargs):
     delete_images(kwargs['instance'].image.name)
+
+@receiver(post_delete, sender=Actor)
+def appmodel_delete_images(sender, **kwargs):
+    delete_images(kwargs['instance'].principalImage.name)

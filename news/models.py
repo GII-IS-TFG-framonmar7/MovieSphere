@@ -1,10 +1,12 @@
+from datetime import datetime
 from django.apps import apps
 from django.db import models
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 class Category(models.Model):
-    name = models.CharField(max_length=100, unique=True)
+    name = models.CharField(max_length=50, unique=True)
 
     def __str__(self):
         return self.name
@@ -17,13 +19,18 @@ class New(models.Model):
         FORBIDDEN = 'FORBIDDEN', 'Forbidden'
         DELETED = 'DELETED', 'Deleted'
         
-    title = models.CharField(max_length=255)
+    title = models.CharField(max_length=100)
     body = models.TextField()
     photo = models.ImageField(upload_to='images/')
-    publicationDate = models.DateTimeField(blank=True, null=True)
+    publicationDate = models.DateTimeField(
+        blank=True, null=True,
+        validators=[MinValueValidator(datetime(1888, 1, 1)), MaxValueValidator(datetime.now())]
+    )
     category = models.ForeignKey('Category', on_delete=models.CASCADE)
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    hateScore = models.IntegerField(default=0)
+    hateScore = models.IntegerField(
+        default=0
+    )
     state = models.CharField(
         max_length=50,
         choices=State.choices,

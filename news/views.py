@@ -9,6 +9,7 @@ from .models import New, Category
 from django.contrib.auth.decorators import login_required
 from django.template.loader import render_to_string
 from .forms import CategoryForm
+from django.utils.html import escape
 
 # Create your views here.
 
@@ -29,8 +30,8 @@ def news(request):
         news_list = [
             {
                 'id': new.id, 
-                'title': new.title, 
-                'image': new.photo.url if new.photo else ''
+                'title': escape(new.title), 
+                'image': escape(new.photo.url) if escape(new.photo) else ''
             } for new in news_queryset
         ]
         return JsonResponse({'news': news_list})

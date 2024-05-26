@@ -1,11 +1,12 @@
 from django.apps import apps
 from django.shortcuts import get_object_or_404, render, redirect
-from .models import Movie, Genre, Review, Image
+from .models import Movie, Genre, Review, Actor, Gender
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from django.contrib import messages
 from django.db.models import Avg
 from django.http import JsonResponse
+from django.utils.html import escape
 
 def home(request):
     # Obtener modelos de las aplicaciones
@@ -56,8 +57,8 @@ def movies(request):
         movies_list = [
             {
                 'id': movie.id, 
-                'title': movie.title, 
-                'image_url': movie.image.url if movie.image else ''
+                'title': escape(movie.title), 
+                'image_url': escape(movie.image.url) if escape(movie.image) else ''
             } for movie in movies_queryset
         ]
         return JsonResponse({'movies': movies_list})
@@ -207,3 +208,36 @@ def view_draft_reviews(request):
         print(review)
     
     return render(request, 'movie_reviews.html', {'reviews': draft_reviews, 'show_drafts': True})
+
+def actors(request):
+    filter_params = {}
+
+    name = request.GET.get('name')
+    if name:
+        filter_params['name__icontains'] = name
+
+    gender = request.GET.get('gender')
+    if gender and gender != 'none':
+        filter_params['gender'] = gender
+
+    actors_queryset = Actor.objects.filter(**filter_params).distinct()
+    gender_options = [('none', 'Todos')] + list(Gender.choices)
+
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        actors_list = [
+            {
+                'id': actor.id, 
+                'name': escape(actor.name),
+                'gender': escape(actor.get_gender_display()),
+                'principalImage': actor.principalImage.url if actor.principalImage else ''
+            } for actor in actors_queryset
+        ]
+        return JsonResponse({'actors': actors_list})
+    
+    return render(request, 'actors.html', {'actors': actors_queryset, 'genders': gender_options})
+
+def actor_detail(request, actor_id):
+    actor = get_object_or_404(Actor, pk=actor_id)
+    performances = actor.performance_set.all()
+
+    return render(request, 'actor_detail.html', {'actor': actor, 'performances': performances})

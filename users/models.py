@@ -9,6 +9,8 @@ from django.core.mail import EmailMultiAlternatives
 from news.models import New
 from movies.models import Review
 from django.contrib.sessions.models import Session
+from django.core.validators import MinValueValidator, MaxValueValidator
+from datetime import date
 
 # Create your models here.
 
@@ -20,8 +22,13 @@ class UserProfile(models.Model):
         return self.user.username
 
 class Strike(models.Model):    
-    date_issued = models.DateField(default=timezone.now)
-    expiration_date = models.DateField()
+    date_issued = models.DateField(
+        default=timezone.now,
+        validators=[MinValueValidator(date(1888, 1, 1)), MaxValueValidator(date.today())]
+    )
+    expiration_date = models.DateField(
+        validators=[MinValueValidator(date(1888, 1, 1)), MaxValueValidator(date.today() + relativedelta(years=1))]
+    )
     review = models.OneToOneField(Review, on_delete=models.CASCADE, null=True, related_name='strike')
     new = models.OneToOneField(New, on_delete=models.CASCADE, null=True, related_name='strike')
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='warnings')
