@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
 from django.db import IntegrityError
 from django.contrib import messages
-from .forms import UserEditForm, CustomUserCreationForm
+from .forms import CustomAuthenticationForm, UserEditForm, CustomUserCreationForm
 from django.contrib.auth import logout
 
 # Create your views here.
@@ -24,30 +24,30 @@ def signup(request):
             except IntegrityError:
                 return render(request, 'signup.html', {
                     'form': form,
-                    'error': 'Username already exists'
+                    'error': 'El nombre de usuario ya existe'
                 })
         else:
             return render(request, 'signup.html', {
                 'form': form,
-                'error': 'Please correct the error below'
+                'error': 'Por favor, corrige el siguiente error'
             })
         
 def signin(request):
     if request.method == 'GET':
         return render(request, 'signin.html', {
-            'form': AuthenticationForm
+            'form': CustomAuthenticationForm
         })
     else:
         user = authenticate(
             request, username=request.POST['username'], password=request.POST['password'])
         if user is None:
             return render(request, 'signin.html', {
-                'form': AuthenticationForm,
-                'error': 'Username or password is incorrect'
+                'form': CustomAuthenticationForm,
+                'error': 'El nombre de usuario o la contraseña son incorrectas'
             })
         elif hasattr(user, 'profile') and user.profile.is_banned:
             return render(request, 'signin.html', {
-                'form': AuthenticationForm(),
+                'form': CustomAuthenticationForm(),
                 'error': 'Tu cuenta ha sido suspendida. Por favor, contacta al soporte para más información.'
             })
         else:
@@ -60,19 +60,28 @@ def signout(request):
         
 @login_required
 def edit_profile(request):
-    if request.method == 'POST':
+    if request.method == 'GET':
+        return render(request, 'edit_profile.html', {
+            'form': UserEditForm(instance=request.user)
+        })
+    else:
         form = UserEditForm(request.POST, instance=request.user)
 
         if form.is_valid():
-            form.save()
-            messages.success(request, '¡Tu perfil ha sido actualizado con éxito!')
-
-        return redirect('home')
-
-    else:
-        form = UserEditForm(instance=request.user)
-
-    return render(request, 'edit_profile.html', {'form': form})
+            try:
+                form.save()
+                messages.success(request, '¡Tu perfil ha sido actualizado con éxito!')
+                return redirect('home')
+            except IntegrityError:
+                return render(request, 'edit_profile.html', {
+                    'form': form,
+                    'error': 'El nombre de usuario ya existe'
+                })
+        else:
+            return render(request, 'edit_profile.html', {
+                'form': form,
+                'error': 'Por favor, corrige el siguiente error'
+            })
 
 def change_password(request):
     messages.success(request, "¡Tu contraseña ha sido cambiada con éxito!")

@@ -10,6 +10,7 @@ from django.contrib.auth.decorators import login_required
 from django.template.loader import render_to_string
 from .forms import CategoryForm
 from django.utils.html import escape
+from django.http import HttpResponseForbidden
 
 # Create your views here.
 
@@ -114,14 +115,20 @@ def update_new(request, new_id, is_draft=False):
     new = get_object_or_404(New, id=new_id)
     new_title = request.POST.get('title')
     new_body = request.POST.get('body')
-    print(request.FILES.get('photo'))
     new_photo = request.FILES.get('photo', None)
     new_category = Category.objects.get(id=request.POST.get('category'))
+
+    if new.author != request.user and not request.user.is_superuser:
+        messages.error(request, 'No tienes permiso para actualizar esta noticia.')
+        return HttpResponseForbidden()
+
+    if not is_draft and not request.user.is_superuser:
+        messages.error(request, 'Solo se pueden actualizar noticias en borrador.')
+        return HttpResponseForbidden()
 
     if request.method == 'POST':
         new.title = new_title
         new.body = new_body
-        print(new_photo)
         if new_photo:
             new.photo = new_photo
         new.category = new_category
@@ -156,6 +163,15 @@ def update_new(request, new_id, is_draft=False):
 @login_required
 def delete_new(request, new_id):
     new = get_object_or_404(New, id=new_id)
+
+    if new.author != request.user and not request.user.is_superuser:
+        messages.error(request, 'No tienes permiso para eliminar esta noticia.')
+        return HttpResponseForbidden()
+
+    if new.state != New.State.IN_DRAFT and not request.user.is_superuser:
+        messages.error(request, 'Solo se pueden eliminar noticias en borrador.')
+        return HttpResponseForbidden()
+    
     if request.method == 'POST':
         new.state = New.State.DELETED
         new.save()

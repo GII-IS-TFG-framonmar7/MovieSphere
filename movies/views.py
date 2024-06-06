@@ -7,6 +7,7 @@ from django.contrib import messages
 from django.db.models import Avg
 from django.http import JsonResponse
 from django.utils.html import escape
+from django.http import HttpResponseForbidden
 
 def home(request):
     # Obtener modelos de las aplicaciones
@@ -137,9 +138,17 @@ def create_review(request, movie_id, is_draft=False):
     
 @login_required
 def update_review(request, review_id, is_draft=False):
-    review = get_object_or_404(Review, id=review_id, user=request.user)
+    review = get_object_or_404(Review, id=review_id)
     new_rating = request.POST.get('rating')
     new_body = request.POST.get('body')
+
+    if review.user != request.user and not request.user.is_superuser:
+        messages.error(request, 'No tienes permiso para actualizar esta reseña.')
+        return HttpResponseForbidden()
+
+    if not is_draft and not request.user.is_superuser:
+        messages.error(request, 'Solo se pueden actualizar reseñas en borrador.')
+        return HttpResponseForbidden()
 
     if request.method == 'POST':
         review.rating = new_rating
@@ -174,7 +183,16 @@ def update_review(request, review_id, is_draft=False):
     
 @login_required
 def delete_review(request, review_id):
-    review = get_object_or_404(Review, id=review_id, user=request.user)
+    review = get_object_or_404(Review, id=review_id)
+
+    if review.user != request.user and not request.user.is_superuser:
+        messages.error(request, 'No tienes permiso para eliminar esta reseña.')
+        return HttpResponseForbidden()
+
+    if review.state != Review.State.IN_DRAFT and not request.user.is_superuser:
+        messages.error(request, 'Solo se pueden eliminar reseñas en borrador.')
+        return HttpResponseForbidden()
+
     if request.method == 'POST':
         review.state = Review.State.DELETED
         review.save()
@@ -204,8 +222,6 @@ def movie_reviews(request, movie_id):
 @login_required
 def view_draft_reviews(request):
     draft_reviews = Review.objects.filter(user=request.user, state=Review.State.IN_DRAFT)
-    for review in draft_reviews:
-        print(review)
     
     return render(request, 'movie_reviews.html', {'reviews': draft_reviews, 'show_drafts': True})
 
