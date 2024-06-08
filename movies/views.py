@@ -18,7 +18,7 @@ def home(request):
     # Obtener conjuntos de consultas
     new_queryset = New.objects.filter().order_by('-publicationDate').distinct()[:1]  # Última noticia
     reviews_queryset = Review.objects.filter().order_by('-publicationDate').distinct()[:2]  # Últimas 2 reseñas
-    images_queryset = HomeImage.objects.filter(is_visible=True)  # Imágenes visibles para el carrusel
+    images_queryset = HomeImage.objects.filter(isVisible=True)  # Imágenes visibles para el carrusel
 
     # Crear listas para el contexto
     latest_new = new_queryset.first() if new_queryset else None

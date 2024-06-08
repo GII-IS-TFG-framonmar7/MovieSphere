@@ -3,7 +3,7 @@ import shutil
 from django.utils import timezone
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import Group, User
-from movies.models import Movie, Genre, HomeImage, Gender, Actor, Performance, Review
+from movies.models import Movie, Genre, Emotion, Analysis, HomeImage, Gender, Actor, Performance, Review
 from news.models import New, Category
 from django.conf import settings
 from djmoney.money import Money
@@ -31,6 +31,8 @@ class Command(BaseCommand):
         Actor.objects.all().delete()
         Movie.objects.all().delete()
         Performance.objects.all().delete()
+        Emotion.objects.all().delete()
+        Analysis.objects.all().delete()
 
         self.restore_images()
 
@@ -273,6 +275,79 @@ class Command(BaseCommand):
                 actor=actor,
                 characterName=performance['characterName'],
                 screenTime=performance['screenTime']
+            )
+
+        # Emotions
+        emotions = [
+            {
+                'name': "Felicidad",
+                'modelName': "happy_detection"
+            },
+            {
+                'name': "Tristeza",
+                'modelName': "sad_detection"
+            },
+            {
+                'name': "Enfado",
+                'modelName': "angry_detection"
+            }
+        ]
+        for emotion in emotions:
+            Emotion.objects.get_or_create(
+                name=emotion['name'],
+                modelName=emotion['modelName']
+            )
+
+        # Analysis
+        analyses = [
+            {
+                'performance_characterName': 'Gandalf',
+                'performance_movie': 'El señor de los anillos',
+                'emotion': 'Felicidad',
+                'result': 85.0
+            },
+            {
+                'performance_characterName': 'Gandalf',
+                'performance_movie': 'El señor de los anillos',
+                'emotion': 'Tristeza',
+                'result': 60.5
+            },
+            {
+                'performance_characterName': 'Gandalf',
+                'performance_movie': 'El señor de los anillos',
+                'emotion': 'Enfado',
+                'result': 75.3
+            },
+            {
+                'performance_characterName': 'The Bulgarian',
+                'performance_movie': 'Noche de juegos',
+                'emotion': 'Felicidad',
+                'result': 45.2
+            },
+            {
+                'performance_characterName': 'The Bulgarian',
+                'performance_movie': 'Noche de juegos',
+                'emotion': 'Tristeza',
+                'result': 78.9
+            },
+            {
+                'performance_characterName': 'The Bulgarian',
+                'performance_movie': 'Noche de juegos',
+                'emotion': 'Enfado',
+                'result': 90.1
+            }
+        ]
+
+        for analysis in analyses:
+            performance = Performance.objects.get(
+                characterName=analysis['performance_characterName'],
+                movie__title=analysis['performance_movie']
+            )
+            emotion = Emotion.objects.get(name=analysis['emotion'])
+            Analysis.objects.get_or_create(
+                performance=performance,
+                emotion=emotion,
+                result=analysis['result']
             )
 
         # Reviews

@@ -9,7 +9,7 @@ from django.utils.text import slugify
 import shutil
 import cv2
 import numpy as np
-from joblib import load as load_joblib
+from .utils import (load_joblib, load_yolo_model, calculate_frame_statistics, update_performance_instance, check_files_exist)
 
 @receiver(post_save, sender=Movie)
 def create_movie_directory(sender, instance, created, **kwargs):
@@ -37,79 +37,41 @@ def performance_post_save(sender, instance, created, **kwargs):
 
     try:
         resources_path = os.path.join(settings.BASE_DIR, 'ai_models', 'resources')
+        yolo_path = os.path.join(resources_path, 'yolo')
+        
+        # Archivos de modelos
         actor_model_filename = f"{slugify(instance.actor.name.replace(' ', '_')).lower()}_detection.joblib"
         actor_model_full_path = os.path.join(resources_path, actor_model_filename)
+        happy_model_full_path = os.path.join(resources_path, "happy_detection.joblib")
+        sad_model_full_path = os.path.join(resources_path, "sad_detection.joblib")
+        angry_model_full_path = os.path.join(resources_path, "angry_detection.joblib")
+
+        # Archivos de YOLO
+        yolo_files = [
+            os.path.join(yolo_path, 'yolov3-face.cfg'),
+            os.path.join(yolo_path, 'yolov3-face.weights'),
+            os.path.join(yolo_path, 'face.names')
+        ]
+
+        # Verificar que todos los archivos existen
+        check_files_exist([actor_model_full_path, happy_model_full_path, sad_model_full_path, angry_model_full_path] + yolo_files)
 
         if os.path.exists(actor_model_full_path):
             actor_model = load_joblib(actor_model_full_path)
+            happy_model = load_joblib(happy_model_full_path)
+            sad_model = load_joblib(sad_model_full_path)
+            angry_model = load_joblib(angry_model_full_path)
 
-            # Rutas para archivos de YOLO
-            yolo_path = os.path.join(resources_path, 'yolo')
-            cfg_path = os.path.join(yolo_path, 'yolov3.cfg')
-            weights_path = os.path.join(yolo_path, 'yolov3.weights')
-            names_path = os.path.join(yolo_path, 'coco.names')
+            face_net, face_classes, face_output_layers = load_yolo_model('yolov3-face.cfg', 'yolov3-face.weights', 'face.names')
 
-            net, classes = load_yolo_model(cfg_path, weights_path, names_path)
-            layer_names = net.getLayerNames()
-            output_layers = [layer_names[i - 1] for i in net.getUnconnectedOutLayers()]
-
-            # Enumerar todos los fotogramas extraídos
             frames_dir = os.path.join(settings.MEDIA_ROOT, f"images/movies/{slugify(instance.movie.title.replace(' ', '_')).lower()}")
-            if os.path.exists(frames_dir) and os.path.isdir(frames_dir):
-                frame_files = [f for f in os.listdir(frames_dir) if os.path.isfile(os.path.join(frames_dir, f))]
-                if frame_files:
-                    human_threshold = 0.8
-                    actor_threshold = 0.75
-                    actor_frame_count = 0
+            frame_files = [f for f in os.listdir(frames_dir) if os.path.isfile(os.path.join(frames_dir, f))]
 
-                    for index, frame_file in enumerate(frame_files): # Para cada frame
-                        frame_path = os.path.join(frames_dir, frame_file)
-                        image = cv2.imread(frame_path)
-                        print(frame_path)
+            statistics = calculate_frame_statistics(frame_files, frames_dir, actor_model, happy_model, sad_model, angry_model, face_net, face_output_layers)
 
-                        detected, detection = detect_human(image, net, output_layers, human_threshold)
-                        prediction = None
-
-                        if detected: # Si aparece un ser humano
-                            processed_image = cv2.resize(image, (100, 100))
-                            processed_image = cv2.cvtColor(processed_image, cv2.COLOR_BGR2GRAY)
-                            processed_image = processed_image.reshape(-1, 100, 100, 1) / 255.0  # Normalizar
-
-                            # Hacer la predicción usando el modelo de detección de actores
-                            prediction = actor_model.predict(processed_image)
-
-                            if prediction > actor_threshold:
-                                actor_frame_count += 1
-
-                    total_frames = len(frame_files)
-                    actor_frame_percentage = actor_frame_count / total_frames
-
-                    movie_duration = instance.movie.duration * 60
-                    appearance_time = movie_duration * actor_frame_percentage
-                    instance.screenTime = round(appearance_time, 2)
-                    instance.save()
+            update_performance_instance(instance, statistics)
     finally:
         post_save.connect(performance_post_save, sender=Performance)
-
-def load_yolo_model(cfg_path, weights_path, names_path):
-    net = cv2.dnn.readNet(weights_path, cfg_path)
-    with open(names_path, 'r') as f:
-        classes = f.read().strip().split('\n')
-    return net, classes
-
-def detect_human(frame, net, output_layers, threshold=0.8):
-    blob = cv2.dnn.blobFromImage(frame, 0.00392, (416, 416), (0, 0, 0), True, crop=False)
-    net.setInput(blob)
-    outs = net.forward(output_layers)
-
-    for out in outs:
-        for detection in out:
-            scores = detection[5:]
-            class_id = np.argmax(scores)
-            confidence = scores[class_id]
-            if confidence > threshold and class_id == 0:  # Clase 0 es 'person'
-                return True, detection
-    return False, None
 
 @receiver(post_delete, sender=HomeImage)
 def appmodel_delete_images(sender, **kwargs):

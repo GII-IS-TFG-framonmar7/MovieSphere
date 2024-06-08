@@ -153,9 +153,27 @@ class Performance(models.Model):
     def __str__(self):
         return f'{self.actor.name} as {self.characterName} in {self.movie.title}'
     
+class Emotion(models.Model):
+    name = models.CharField(max_length=50)
+    modelName = models.CharField(max_length=50)
+
+    def __str__(self):
+        return self.name
+    
+class Analysis(models.Model):
+    performance = models.ForeignKey(Performance, on_delete=models.CASCADE, related_name='analyzes')
+    emotion = models.ForeignKey(Emotion, on_delete=models.CASCADE, related_name='analyzes')
+    result = models.DecimalField(
+        max_digits=10, decimal_places=2, blank=True, null=True,
+        validators=[MinValueValidator(0), MaxValueValidator(10000)]
+    )
+
+    def __str__(self):
+        return f'Analysis of {self.performance} - {self.emotion.name}: {self.result}'
+    
 class HomeImage(models.Model):
     url = models.ImageField(upload_to='images/')
-    is_visible = models.BooleanField(default=True)
+    isVisible = models.BooleanField(default=True)
 
     def save(self, *args, **kwargs):
         is_new = self.pk is None
