@@ -123,7 +123,6 @@ class Review(models.Model):
         
         super().save(*args, **kwargs)
 
-
         should_create_strike = (
             (is_new and self.state == self.State.FORBIDDEN) or
             (not is_new and old_state != self.state and self.state == self.State.FORBIDDEN)
@@ -135,8 +134,6 @@ class Review(models.Model):
 
         if should_create_strike and not strike_exists:
             Strike.objects.create(review=self, user=self.user)
-        elif should_create_strike and strike_exists:
-            raise ValidationError("This review already has an associated strike and cannot generate another.")
 
     def __str__(self):
         return f'{self.state}: {self.user.username} for {self.movie.title}'
@@ -164,7 +161,7 @@ class Analysis(models.Model):
     performance = models.ForeignKey(Performance, on_delete=models.CASCADE, related_name='analyzes')
     emotion = models.ForeignKey(Emotion, on_delete=models.CASCADE, related_name='analyzes')
     result = models.DecimalField(
-        max_digits=10, decimal_places=2, blank=True, null=True,
+        max_digits=10, decimal_places=2,
         validators=[MinValueValidator(0), MaxValueValidator(10000)]
     )
 

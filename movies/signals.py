@@ -46,6 +46,9 @@ def performance_post_save(sender, instance, created, **kwargs):
         sad_model_full_path = os.path.join(resources_path, "sad_detection.joblib")
         angry_model_full_path = os.path.join(resources_path, "angry_detection.joblib")
 
+        if not os.path.exists(actor_model_full_path):
+            return
+
         # Archivos de YOLO
         yolo_files = [
             os.path.join(yolo_path, 'yolov3-face.cfg'),

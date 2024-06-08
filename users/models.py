@@ -29,8 +29,8 @@ class Strike(models.Model):
     expiration_date = models.DateField(
         validators=[MinValueValidator(date(1888, 1, 1)), MaxValueValidator(date.today() + relativedelta(years=1))]
     )
-    review = models.OneToOneField(Review, on_delete=models.CASCADE, null=True, related_name='strike')
-    new = models.OneToOneField(New, on_delete=models.CASCADE, null=True, related_name='strike')
+    review = models.OneToOneField(Review, on_delete=models.CASCADE, null=True, blank=True, related_name='strike')
+    new = models.OneToOneField(New, on_delete=models.CASCADE, null=True, blank=True, related_name='strike')
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='warnings')
 
     def save(self, *args, **kwargs):
