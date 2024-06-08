@@ -13,12 +13,12 @@ def home(request):
     # Obtener modelos de las aplicaciones
     New = apps.get_model('news', 'New')
     Review = apps.get_model('movies', 'Review')
-    Image = apps.get_model('movies', 'Image')
+    HomeImage = apps.get_model('movies', 'HomeImage')
     
     # Obtener conjuntos de consultas
     new_queryset = New.objects.filter().order_by('-publicationDate').distinct()[:1]  # Última noticia
     reviews_queryset = Review.objects.filter().order_by('-publicationDate').distinct()[:2]  # Últimas 2 reseñas
-    images_queryset = Image.objects.filter().distinct()  # Todas las imágenes para el carrusel
+    images_queryset = HomeImage.objects.filter(is_visible=True)  # Imágenes visibles para el carrusel
 
     # Crear listas para el contexto
     latest_new = new_queryset.first() if new_queryset else None

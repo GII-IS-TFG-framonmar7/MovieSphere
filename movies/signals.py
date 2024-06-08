@@ -1,7 +1,7 @@
 from django.apps import apps
 from django.dispatch import receiver
 from django.db.models.signals import post_save, post_delete
-from .models import Image, Movie, Performance, Actor
+from .models import HomeImage, Movie, Performance, Actor
 from .utils import delete_images
 import os
 from django.conf import settings
@@ -111,7 +111,7 @@ def detect_human(frame, net, output_layers, threshold=0.8):
                 return True, detection
     return False, None
 
-@receiver(post_delete, sender=Image)
+@receiver(post_delete, sender=HomeImage)
 def appmodel_delete_images(sender, **kwargs):
     delete_images(kwargs['instance'].url.name)
 

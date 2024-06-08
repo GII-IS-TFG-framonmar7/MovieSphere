@@ -3,7 +3,7 @@ from django.urls import reverse
 from django.contrib.auth.models import User
 from django.apps import apps
 from djmoney.money import Money
-from movies.models import Review, Image, Movie, Genre, Actor, Gender, Performance
+from movies.models import Review, HomeImage, Movie, Genre, Actor, Gender, Performance
 from django.utils import timezone
 from news.models import New, Category
 from unittest.mock import patch
@@ -54,7 +54,7 @@ class HomeViewTest(TestCase):
             rating=4, 
             publicationDate="2023-01-02"
         )
-        self.image = Image.objects.create(url="http://example.com/image.jpg")
+        self.image = HomeImage.objects.create(url="http://example.com/image.jpg")
 
     def test_home_view_status_code(self):
         response = self.client.get(self.url)

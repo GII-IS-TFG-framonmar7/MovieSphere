@@ -155,14 +155,15 @@ class Performance(models.Model):
     def __str__(self):
         return f'{self.actor.name} as {self.characterName} in {self.movie.title}'
     
-class Image(models.Model):
+class HomeImage(models.Model):
     url = models.ImageField(upload_to='images/')
+    is_visible = models.BooleanField(default=True)
 
     def save(self, *args, **kwargs):
         is_new = self.pk is None
 
         if not is_new:
-            old_image = Image.objects.get(pk=self.pk)
+            old_image = HomeImage.objects.get(pk=self.pk)
             if old_image.url and old_image.url != self.url:
                 old_image.url.delete(save=False)
         

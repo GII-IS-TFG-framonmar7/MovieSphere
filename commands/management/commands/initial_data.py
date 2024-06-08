@@ -3,7 +3,7 @@ import shutil
 from django.utils import timezone
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import Group, User
-from movies.models import Movie, Genre, Image, Gender, Actor, Performance, Review
+from movies.models import Movie, Genre, HomeImage, Gender, Actor, Performance, Review
 from news.models import New, Category
 from django.conf import settings
 from djmoney.money import Money
@@ -26,7 +26,7 @@ class Command(BaseCommand):
         Group.objects.all().delete()
         Genre.objects.all().delete()
         Category.objects.all().delete()
-        Image.objects.all().delete()
+        HomeImage.objects.all().delete()
         New.objects.all().delete()
         Actor.objects.all().delete()
         Movie.objects.all().delete()
@@ -79,7 +79,7 @@ class Command(BaseCommand):
             'images/Conoce-a-los-actores-mejores-pagados-de-Hollywood-en-lo-que-va-del-2022.jpg'
         ]
         for image_url in images:
-            Image.objects.get_or_create(url=image_url)
+            HomeImage.objects.get_or_create(url=image_url)
 
         # News
         news = [
