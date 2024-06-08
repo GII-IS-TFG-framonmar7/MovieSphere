@@ -60,7 +60,16 @@
                                 <h5 class="card-title">{{ performance.characterName }}</h5>
                                 <p class="card-text mt-auto">
                                     <strong>Película:</strong> {{ performance.movie.title }}<br>
-                                    <strong>Tiempo en pantalla:</strong> {{ performance.screenTime }} segundos
+                                    <strong>Tiempo en pantalla:</strong> {{ performance.screenTime }} segundos<br>
+                                    {% for analysis in performance.analyzes.all %}
+                                        {% if analysis.emotion.name == 'Felicidad' %}
+                                            <strong>Tiempo feliz:</strong> {{ analysis.result }} segundos<br>
+                                        {% elif analysis.emotion.name == 'Tristeza' %}
+                                            <strong>Tiempo triste:</strong> {{ analysis.result }} segundos<br>
+                                        {% elif analysis.emotion.name == 'Enfado' %}
+                                            <strong>Tiempo enfadado:</strong> {{ analysis.result }} segundos<br>
+                                        {% endif %}
+                                    {% endfor %}
                                 </p>
                             </div>
                         </div>

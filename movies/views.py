@@ -1,6 +1,6 @@
 from django.apps import apps
 from django.shortcuts import get_object_or_404, render, redirect
-from .models import Movie, Genre, Review, Actor, Gender
+from .models import Movie, Genre, Review, Actor, Gender, Performance
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from django.contrib import messages
@@ -254,6 +254,9 @@ def actors(request):
 
 def actor_detail(request, actor_id):
     actor = get_object_or_404(Actor, pk=actor_id)
-    performances = actor.performance_set.all()
-
-    return render(request, 'actor_detail.html', {'actor': actor, 'performances': performances})
+    performances = Performance.objects.filter(actor=actor).prefetch_related('analyzes__emotion')
+    context = {
+        'actor': actor,
+        'performances': performances,
+    }
+    return render(request, 'actor_detail.html', context)

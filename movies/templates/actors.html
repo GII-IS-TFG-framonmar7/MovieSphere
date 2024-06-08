@@ -20,19 +20,19 @@
     </form>
     <div class="row" id="results">
         {% for actor in actors %}
-        <div class="col-md-6 col-lg-4 mb-3">
-            <div class="card h-100">
-                <div style="position: relative; padding-top: 56.25%;">
-                    <img src="{{ actor.principalImage.url }}" class="card-img-top" alt="{{ actor.name }}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;">
-                </div>
-                <div class="card-body">
-                    <h5 class="card-title">{{ actor.name }}</h5>
-                    <a href="{% url 'actor_detail' actor_id=actor.id %}" class="btn btn-primary">Más información</a>
+            <div class="col-md-6 col-lg-4 mb-3">
+                <div class="card h-100">
+                    <div style="position: relative; padding-top: 56.25%;">
+                        <img src="{{ actor.principalImage.url }}" class="card-img-top" alt="{{ actor.name }}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                    <div class="card-body text-center d-flex flex-column justify-content-center align-items-center">
+                        <h5 class="card-title">{{ actor.name }}</h5>
+                        <a href="{% url 'actor_detail' actor_id=actor.id %}" class="btn btn-primary">Más información</a>
+                    </div>
                 </div>
             </div>
-        </div>
         {% empty %}
-        <p>No se encontraron actores.</p>
+            <p>No se encontraron actores.</p>
         {% endfor %}
     </div>
 </div>
@@ -52,18 +52,22 @@
             dataType: 'json',
             success: function(data) {
               var actorsHtml = '';
-              $.each(data.actors, function(index, actor) {
-                var detailUrl = '/actors/' + actor.id + '/';
-                actorsHtml += '<div class="col-md-6 col-lg-4 mb-3">' +
-                    '<div class="card h-100">' +
-                        '<div style="position: relative; padding-top: 56.25%;">' +
-                            '<img src="' + actor.principalImage + '" class="card-img-top" alt="' + actor.name + '" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;">' +
-                        '</div>' +
-                        '<div class="card-body">' +
-                            '<h5 class="card-title">' + actor.name + '</h5>' +
-                            '<a href="' + detailUrl + '" class="btn btn-primary">Más información</a>' +
-                        '</div></div></div>';
-              });
+              if (data.actors.length > 0) {
+                $.each(data.actors, function(index, actor) {
+                    var detailUrl = '/actors/' + actor.id + '/';
+                    actorsHtml += '<div class="col-md-6 col-lg-4 mb-3">' +
+                        '<div class="card h-100">' +
+                            '<div style="position: relative; padding-top: 56.25%;">' +
+                                '<img src="' + actor.principalImage + '" class="card-img-top" alt="' + actor.name + '" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;">' +
+                            '</div>' +
+                            '<div class="card-body text-center d-flex flex-column justify-content-center align-items-center">' +
+                                '<h5 class="card-title">' + actor.name + '</h5>' +
+                                '<a href="' + detailUrl + '" class="btn btn-primary">Más información</a>' +
+                            '</div></div></div>';
+                  });
+              } else {
+                actorsHtml += '<div class="col-12 text-center d-flex justify-content-center align-items-center"><p>No se encontraron actores.</p></div>';
+              }
               $('#results').html(actorsHtml);
             }
           });
