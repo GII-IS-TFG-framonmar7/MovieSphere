@@ -63,12 +63,10 @@ class Movie(models.Model):
     )
     country = models.CharField(max_length=100)
     budget = MoneyField(
-        max_digits=14, decimal_places=2, default_currency='USD',
-        validators=[MinValueValidator(0)]
+        max_digits=14, decimal_places=2, default_currency='USD'
     )
     revenue = MoneyField(
-        max_digits=14, decimal_places=2, default_currency='USD',
-        validators=[MinValueValidator(0)]
+        max_digits=14, decimal_places=2, default_currency='USD'
     )
     genres = models.ManyToManyField(Genre, related_name='movies')
     actors = models.ManyToManyField(Actor, through='Performance')
