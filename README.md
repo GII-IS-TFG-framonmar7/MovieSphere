@@ -1,0 +1,2 @@
+# MovieSphere
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/809fd022cf09435e8ea3ac489f98f546)](https://app.codacy.com/gh/GII-IS-TFG-framonmar7/MovieSphere?utm_source=github.com&utm_medium=referral&utm_content=GII-IS-TFG-framonmar7/MovieSphere&utm_campaign=Badge_Grade)
