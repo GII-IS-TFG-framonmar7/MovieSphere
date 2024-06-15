@@ -1,7 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import AuthenticationForm
 from django.db import IntegrityError
 from django.contrib import messages
 from .forms import CustomAuthenticationForm, UserEditForm, CustomUserCreationForm
@@ -83,6 +82,7 @@ def edit_profile(request):
                 'error': 'Por favor, corrige el siguiente error'
             })
 
+@login_required
 def change_password(request):
     messages.success(request, "¡Tu contraseña ha sido cambiada con éxito!")
     return redirect(('signin'))

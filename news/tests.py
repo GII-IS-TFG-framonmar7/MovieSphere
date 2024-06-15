@@ -1,6 +1,6 @@
 from django.test import TestCase, Client
 from django.urls import reverse
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.apps import apps
 from news.models import New, Category
 from unittest.mock import patch
@@ -98,6 +98,8 @@ class ViewDraftNewsTest(TestCase):
     def setUp(self):
         self.client = Client()
         self.user = User.objects.create_user(username='testuser', password='12345')
+        self.writer_group = Group.objects.create(name='Writer')
+        self.user.groups.add(self.writer_group)
         self.category = Category.objects.create(name="Tech")
         self.new = New.objects.create(
             title="Draft News",
@@ -126,6 +128,8 @@ class CreateNewTest(TestCase):
     def setUp(self):
         self.client = Client()
         self.user = User.objects.create_user(username='testuser', password='12345')
+        self.writer_group = Group.objects.create(name='Writer')
+        self.user.groups.add(self.writer_group)
         self.category = Category.objects.create(name="Tech")
         self.publishUrl = reverse('publish_new')
         self.draftUrl = reverse('draft_new')
@@ -192,6 +196,8 @@ class UpdateNewTest(TestCase):
         self.user = User.objects.create_user(username='testuser', password='12345')
         self.other_user = User.objects.create_user(username='otheruser', password='12345')
         self.admin_user = User.objects.create_superuser(username='adminuser', password='12345')
+        self.writer_group = Group.objects.create(name='Writer')
+        self.user.groups.add(self.writer_group)
         self.category = Category.objects.create(name="Tech")
         self.new = New.objects.create(
             title="Initial Title",
@@ -259,6 +265,8 @@ class DeleteNewTest(TestCase):
         self.user = User.objects.create_user(username='testuser', password='12345')
         self.other_user = User.objects.create_user(username='otheruser', password='12345')
         self.admin_user = User.objects.create_superuser(username='adminuser', password='12345')
+        self.writer_group = Group.objects.create(name='Writer')
+        self.user.groups.add(self.writer_group)
         self.category = Category.objects.create(name="Tech")
         self.new = New.objects.create(
             title="News to be deleted",
@@ -299,8 +307,12 @@ class DeleteNewTest(TestCase):
 class LoadCategoryDataTest(TestCase):
     def setUp(self):
         self.client = Client()
+        self.user = User.objects.create_user(username='testuser', password='12345')
+        self.writer_group = Group.objects.create(name='Writer')
+        self.user.groups.add(self.writer_group)
         self.category = Category.objects.create(name="Tech")
         self.url = reverse('category_load')
+        self.client.login(username='testuser', password='12345')
 
     def test_category_load_status_code(self):
         response = self.client.get(self.url)
@@ -315,7 +327,11 @@ class LoadCategoryDataTest(TestCase):
 class CategoryCreateTest(TestCase):
     def setUp(self):
         self.client = Client()
+        self.user = User.objects.create_user(username='testuser', password='12345')
+        self.writer_group = Group.objects.create(name='Writer')
+        self.user.groups.add(self.writer_group)
         self.url = reverse('category_create')
+        self.client.login(username='testuser', password='12345')
 
     def test_category_create_get(self):
         response = self.client.get(self.url)
@@ -338,8 +354,12 @@ class CategoryCreateTest(TestCase):
 class CategoryUpdateTest(TestCase):
     def setUp(self):
         self.client = Client()
+        self.user = User.objects.create_user(username='testuser', password='12345')
+        self.writer_group = Group.objects.create(name='Writer')
+        self.user.groups.add(self.writer_group)
         self.category = Category.objects.create(name="Tech")
         self.url = reverse('category_update', args=[self.category.id])
+        self.client.login(username='testuser', password='12345')
 
     def test_category_update_get(self):
         response = self.client.get(self.url)
@@ -364,8 +384,12 @@ class CategoryUpdateTest(TestCase):
 class CategoryDeleteTest(TestCase):
     def setUp(self):
         self.client = Client()
+        self.user = User.objects.create_user(username='testuser', password='12345')
+        self.writer_group = Group.objects.create(name='Writer')
+        self.user.groups.add(self.writer_group)
         self.category = Category.objects.create(name="Tech")
         self.url = reverse('category_delete', args=[self.category.id])
+        self.client.login(username='testuser', password='12345')
 
     def test_category_delete(self):
         response = self.client.post(self.url)

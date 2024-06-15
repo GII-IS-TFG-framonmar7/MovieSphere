@@ -10,17 +10,14 @@ from django.utils.html import escape
 from django.http import HttpResponseForbidden
 
 def home(request):
-    # Obtener modelos de las aplicaciones
     New = apps.get_model('news', 'New')
     Review = apps.get_model('movies', 'Review')
     HomeImage = apps.get_model('movies', 'HomeImage')
     
-    # Obtener conjuntos de consultas
-    new_queryset = New.objects.filter().order_by('-publicationDate').distinct()[:1]  # Última noticia
-    reviews_queryset = Review.objects.filter().order_by('-publicationDate').distinct()[:2]  # Últimas 2 reseñas
-    images_queryset = HomeImage.objects.filter(isVisible=True)  # Imágenes visibles para el carrusel
+    new_queryset = New.objects.filter().order_by('-publicationDate').distinct()[:1]
+    reviews_queryset = Review.objects.filter().order_by('-publicationDate').distinct()[:2]
+    images_queryset = HomeImage.objects.filter(isVisible=True)
 
-    # Crear listas para el contexto
     latest_new = new_queryset.first() if new_queryset else None
     reviews_list = [{'movie': review.movie, 'user': review.user, 'body': review.body, 'rating': review.rating, 'publicationDate': review.publicationDate} for review in reviews_queryset]
     images_list = [{'index': index + 1, 'url': image.url} for index, image in enumerate(images_queryset)]

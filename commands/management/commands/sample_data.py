@@ -115,9 +115,9 @@ class Command(BaseCommand):
                 author=created_users['writer1'],
                 state=New.State.PUBLISHED
             )
-        for date in dates_before_today:
+        for index, date in enumerate(dates_before_today):
             New.objects.get_or_create(
-                title='Texto de prueba',
+                title=f'Texto de prueba - {index}',
                 body='Texto de prueba',
                 photo='images/chufo-llorens-desti-herois-destino-heroes-efe.jpeg',
                 publicationDate=date,
@@ -139,9 +139,9 @@ class Command(BaseCommand):
                 hair_color='Texto de prueba',
                 eye_color='Texto de prueba'
             )
-        for date in dates_before_today:
+        for index, date in enumerate(dates_before_today):
             Actor.objects.get_or_create(
-                name='Texto de prueba',
+                name=f'Texto de prueba - 1.{index}',
                 gender=Gender.MAN,
                 birthday=date,
                 nationality='Texto de prueba',
@@ -151,9 +151,9 @@ class Command(BaseCommand):
                 hair_color='Texto de prueba',
                 eye_color='Texto de prueba'
             )
-        for text in texts_under_101_characters:
+        for index, text in enumerate(texts_under_101_characters):
             Actor.objects.get_or_create(
-                name='Texto de prueba',
+                name=f'Otro texto de prueba - 2.{index}',
                 gender=Gender.WOMAN,
                 birthday=make_aware(datetime(2020, 4, 4)),
                 nationality='Texto de prueba',
@@ -163,9 +163,9 @@ class Command(BaseCommand):
                 hair_color='Texto de prueba',
                 eye_color='Texto de prueba'
             )
-        for amount in amounts_under_5_digits:
+        for index, amount in enumerate(amounts_under_5_digits):
             Actor.objects.get_or_create(
-                name='Texto de prueba',
+                name=f'Otro texto de prueba - 3.{index}',
                 gender=Gender.WOMAN,
                 birthday=make_aware(datetime(2020, 4, 4)),
                 nationality='Texto de prueba',
@@ -175,9 +175,9 @@ class Command(BaseCommand):
                 hair_color='Texto de prueba',
                 eye_color='Texto de prueba'
             )
-        for amount in amounts_under_5_digits:
+        for index, amount in enumerate(amounts_under_5_digits):
             Actor.objects.get_or_create(
-                name='Texto de prueba',
+                name=f'Otro texto de prueba - 4.{index}',
                 gender=Gender.WOMAN,
                 birthday=make_aware(datetime(2020, 4, 4)),
                 nationality='Texto de prueba',
@@ -187,9 +187,9 @@ class Command(BaseCommand):
                 hair_color='Texto de prueba',
                 eye_color='Texto de prueba'
             )
-        for text in texts_under_51_characters:
+        for index, text in enumerate(texts_under_51_characters):
             Actor.objects.get_or_create(
-                name='Texto de prueba',
+                name=f'Otro texto de prueba - 5.{index}',
                 gender=Gender.WOMAN,
                 birthday=make_aware(datetime(2020, 4, 4)),
                 nationality='Texto de prueba',
@@ -199,9 +199,9 @@ class Command(BaseCommand):
                 hair_color=text,
                 eye_color='Texto de prueba'
             )
-        for text in texts_under_51_characters:
+        for index, text in enumerate(texts_under_51_characters):
             Actor.objects.get_or_create(
-                name='Texto de prueba',
+                name=f'Otro texto de prueba - 6.{index}',
                 gender=Gender.WOMAN,
                 birthday=make_aware(datetime(2020, 4, 4)),
                 nationality='Texto de prueba',
@@ -227,9 +227,9 @@ class Command(BaseCommand):
             if created:
                 genre = Genre.objects.get(name='Texto de prueba')
                 movie.genres.add(genre)
-        for text in texts_under_101_characters:
+        for index, text in enumerate(texts_under_101_characters):
             movie, created = Movie.objects.get_or_create(
-                title='Texto de prueba',
+                title=f'Otro texto de prueba - 1.{index}',
                 director=text,
                 releaseYear=2020,
                 image='images/MV5BMjI3ODkzNDk5MF5BMl5BanBnXkFtZTgwNTEyNjY2NDM@._V1_FMjpg_UX1000_.jpg',
@@ -241,9 +241,9 @@ class Command(BaseCommand):
             if created:
                 genre = Genre.objects.get(name='Texto de prueba')
                 movie.genres.add(genre)
-        for year in years_before_2200:
+        for index, year in enumerate(years_before_2200):
             movie, created = Movie.objects.get_or_create(
-                title='Texto de prueba',
+                title=f'Otro texto de prueba - 2.{index}',
                 director='Texto de prueba',
                 releaseYear=year,
                 image='images/MV5BMjI3ODkzNDk5MF5BMl5BanBnXkFtZTgwNTEyNjY2NDM@._V1_FMjpg_UX1000_.jpg',
@@ -255,9 +255,9 @@ class Command(BaseCommand):
             if created:
                 genre = Genre.objects.get(name='Texto de prueba')
                 movie.genres.add(genre)
-        for number in numbers_under_601:
+        for index, number in enumerate(numbers_under_601):
             movie, created = Movie.objects.get_or_create(
-                title='Texto de prueba',
+                title=f'Otro texto de prueba - 3.{index}',
                 director='Texto de prueba',
                 releaseYear=2020,
                 image='images/MV5BMjI3ODkzNDk5MF5BMl5BanBnXkFtZTgwNTEyNjY2NDM@._V1_FMjpg_UX1000_.jpg',
@@ -269,9 +269,9 @@ class Command(BaseCommand):
             if created:
                 genre = Genre.objects.get(name='Texto de prueba')
                 movie.genres.add(genre)
-        for text in texts_under_101_characters:
+        for index, text in enumerate(texts_under_101_characters):
             movie, created = Movie.objects.get_or_create(
-                title='Texto de prueba',
+                title=f'Otro texto de prueba - 4.{index}',
                 director='Texto de prueba',
                 releaseYear=2020,
                 image='images/MV5BMjI3ODkzNDk5MF5BMl5BanBnXkFtZTgwNTEyNjY2NDM@._V1_FMjpg_UX1000_.jpg',
@@ -283,9 +283,9 @@ class Command(BaseCommand):
             if created:
                 genre = Genre.objects.get(name='Texto de prueba')
                 movie.genres.add(genre)
-        for amount in amounts_under_14_digits:
+        for index, amount in enumerate(amounts_under_14_digits):
             movie, created = Movie.objects.get_or_create(
-                title='Texto de prueba',
+                title=f'Otro texto de prueba - 5.{index}',
                 director='Texto de prueba',
                 releaseYear=2020,
                 image='images/MV5BMjI3ODkzNDk5MF5BMl5BanBnXkFtZTgwNTEyNjY2NDM@._V1_FMjpg_UX1000_.jpg',
@@ -297,9 +297,9 @@ class Command(BaseCommand):
             if created:
                 genre = Genre.objects.get(name='Texto de prueba')
                 movie.genres.add(genre)
-        for amount in amounts_under_14_digits:
+        for index, amount in enumerate(amounts_under_14_digits):
             movie, created = Movie.objects.get_or_create(
-                title='Texto de prueba',
+                title=f'Otro texto de prueba - 6.{index}',
                 director='Texto de prueba',
                 releaseYear=2020,
                 image='images/MV5BMjI3ODkzNDk5MF5BMl5BanBnXkFtZTgwNTEyNjY2NDM@._V1_FMjpg_UX1000_.jpg',

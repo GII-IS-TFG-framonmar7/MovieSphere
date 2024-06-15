@@ -1,4 +1,3 @@
-from django.apps import apps
 from django.dispatch import receiver
 from django.db.models.signals import post_save, post_delete
 from .models import HomeImage, Movie, Performance, Actor
@@ -7,8 +6,6 @@ import os
 from django.conf import settings
 from django.utils.text import slugify
 import shutil
-import cv2
-import numpy as np
 from .utils import (load_joblib, load_yolo_model, calculate_frame_statistics, update_performance_instance, check_files_exist)
 
 @receiver(post_save, sender=Movie)
@@ -24,9 +21,6 @@ def delete_movie_images(sender, instance, **kwargs):
     movie_path = os.path.join(settings.MEDIA_ROOT, f'images/movies/{directory_name}')
     if os.path.exists(movie_path):
         shutil.rmtree(movie_path)
-        print(f"Deleted directory {movie_path}")
-    else:
-        print(f"The directory {movie_path} does not exist")
 
 @receiver(post_save, sender=Performance)
 def performance_post_save(sender, instance, created, **kwargs):
@@ -66,12 +60,13 @@ def performance_post_save(sender, instance, created, **kwargs):
             angry_model = load_joblib(angry_model_full_path)
 
             face_net, face_classes, face_output_layers = load_yolo_model('yolov3-face.cfg', 'yolov3-face.weights', 'face.names')
-
             frames_dir = os.path.join(settings.MEDIA_ROOT, f"images/movies/{slugify(instance.movie.title.replace(' ', '_')).lower()}")
-            frame_files = [f for f in os.listdir(frames_dir) if os.path.isfile(os.path.join(frames_dir, f))]
 
+            if not os.path.exists(frames_dir):
+                return
+
+            frame_files = [f for f in os.listdir(frames_dir)]
             statistics = calculate_frame_statistics(frame_files, frames_dir, actor_model, happy_model, sad_model, angry_model, face_net, face_output_layers)
-
             update_performance_instance(instance, statistics)
     finally:
         post_save.connect(performance_post_save, sender=Performance)

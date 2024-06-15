@@ -54,6 +54,12 @@ class CustomUserCreationForm(UserCreationForm):
         model = User
         fields = ('username', 'first_name', 'last_name', 'email', 'password1', 'password2')
 
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if User.objects.filter(email=email).exists():
+            raise forms.ValidationError("Este correo electrónico ya está en uso.")
+        return email
+
 class UserEditForm(forms.ModelForm):
     username = forms.CharField(
         max_length=150,
@@ -89,6 +95,12 @@ class UserEditForm(forms.ModelForm):
         for fieldname, field in self.fields.items():
             if field.required:
                 field.widget.attrs.update({'class': 'required form-control'})
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if User.objects.filter(email=email).exclude(pk=self.instance.pk).exists():
+            raise forms.ValidationError("Este correo electrónico ya está en uso.")
+        return email
 
 class CustomPasswordChangeDoneView(PasswordChangeDoneView):
     def form_valid(self, form):

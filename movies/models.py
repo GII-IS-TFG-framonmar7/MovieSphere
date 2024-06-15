@@ -21,7 +21,7 @@ class Genre(models.Model):
         return self.name
     
 class Actor(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, unique=True)
     gender = models.CharField(
         max_length=50,
         choices=Gender.choices,
@@ -32,8 +32,8 @@ class Actor(models.Model):
     )
     nationality = models.CharField(max_length=100)
     principalImage = models.ImageField(upload_to='images/')
-    height = models.DecimalField(max_digits=5, decimal_places=2)
-    weight = models.DecimalField(max_digits=5, decimal_places=2)
+    height = models.DecimalField(max_digits=5, decimal_places=2, validators=[MinValueValidator(0)])
+    weight = models.DecimalField(max_digits=5, decimal_places=2, validators=[MinValueValidator(0)])
     hair_color = models.CharField(max_length=50)
     eye_color = models.CharField(max_length=50)
 
@@ -51,7 +51,7 @@ class Actor(models.Model):
         return self.name
 
 class Movie(models.Model):
-    title = models.CharField(max_length=100)
+    title = models.CharField(max_length=100, unique=True)
     director = models.CharField(max_length=100)
     releaseYear = models.PositiveIntegerField(
         validators=[MinValueValidator(1888), MaxValueValidator(2200)],
@@ -70,6 +70,12 @@ class Movie(models.Model):
     )
     genres = models.ManyToManyField(Genre, related_name='movies')
     actors = models.ManyToManyField(Actor, through='Performance')
+
+    def clean(self):
+        if self.budget is not None and self.budget.amount < 0:
+            raise ValidationError({'budget': 'El presupuesto debe ser mayor o igual que 0.'})
+        if self.revenue is not None and self.revenue.amount < 0:
+            raise ValidationError({'revenue': 'Los ingresos deben ser mayores o iguales que 0.'})
 
     def save(self, *args, **kwargs):
         is_new = self.pk is None
@@ -102,7 +108,8 @@ class Review(models.Model):
         validators=[MinValueValidator(date(1888, 1, 1)), MaxValueValidator(date.today())]
     )
     hateScore = models.IntegerField(
-        default=0
+        default=0,
+        validators=[MinValueValidator(0), MaxValueValidator(10000)]
     )
     state = models.CharField(
         max_length=50,
@@ -151,7 +158,7 @@ class Performance(models.Model):
         return f'{self.actor.name} as {self.characterName} in {self.movie.title}'
     
 class Emotion(models.Model):
-    name = models.CharField(max_length=50)
+    name = models.CharField(max_length=50, unique=True)
     modelName = models.CharField(max_length=50)
 
     def __str__(self):

@@ -8,10 +8,8 @@ from .models import Emotion, Analysis
 
 def delete_images(image_path):
     full_path = os.path.join(settings.MEDIA_ROOT, image_path)
-    try:
+    if os.path.exists(full_path):
         os.remove(full_path)
-    except FileNotFoundError:
-        print(f"El archivo {full_path} no existe.")
 
 def check_files_exist(files):
     for file in files:
@@ -129,6 +127,12 @@ def preprocess_face_for_emotion_model(face):
 
 def update_performance_instance(instance, statistics):
     total_frames = statistics['total_frames']
+
+    if total_frames == 0:
+        instance.screenTime = 0
+        instance.save()
+        return
+    
     actor_frame_percentage = statistics['actor_frame_count'] / total_frames
     happy_frame_percentage = statistics['happy_frame_count'] / total_frames
     sad_frame_percentage = statistics['sadness_frame_count'] / total_frames

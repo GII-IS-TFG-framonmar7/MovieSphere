@@ -43,6 +43,10 @@ def news(request):
 
 def new_detail(request, new_id):
     new = get_object_or_404(New, pk=new_id)
+    
+    if new.state != New.State.PUBLISHED:
+        messages.error(request, 'Esta noticia no está disponible.')
+        return HttpResponseForbidden()
 
     return render(request, 'new_detail.html', {'new': new})
 
@@ -65,6 +69,10 @@ def calculate_hate_score(body):
 
 @login_required
 def create_new(request, is_draft=False):
+    if not request.user.groups.filter(name='Writer').exists():
+        messages.error(request, 'No tienes permiso para crear una noticia.')
+        return HttpResponseForbidden()
+    
     if request.method == 'POST':
         title = request.POST.get('title')
         body = request.POST.get('body')
@@ -183,18 +191,32 @@ def delete_new(request, new_id):
     
 @login_required
 def view_draft_news(request):
+    if not request.user.groups.filter(name='Writer').exists():
+        messages.error(request, 'No tienes permiso para ver noticias en borrador.')
+        return HttpResponseForbidden()
+    
     news = New.objects.filter(author=request.user, state=New.State.IN_DRAFT)
     categories = Category.objects.all()
     
     return render(request, 'draft_news.html', {'news': news, 'categories': categories})
 
+@login_required
 def load_category_data(request):
+    if not request.user.groups.filter(name='Writer').exists():
+        messages.error(request, 'No tienes permiso para gestionar las categorías.')
+        return HttpResponseForbidden()
+    
     categories = Category.objects.all()
     return JsonResponse({
         'html': render_to_string('partials/category_list.html', {'categories': categories}, request=request)
     })
 
+@login_required
 def category_create(request):
+    if not request.user.groups.filter(name='Writer').exists():
+        messages.error(request, 'No tienes permiso para crear categorías.')
+        return HttpResponseForbidden()
+    
     if request.method == 'POST':
         form = CategoryForm(request.POST)
         if form.is_valid():
@@ -222,7 +244,12 @@ def category_create(request):
         })
         return JsonResponse({'html_form': html_form})
 
+@login_required
 def category_update(request, id):
+    if not request.user.groups.filter(name='Writer').exists():
+        messages.error(request, 'No tienes permiso para actualizar categorías.')
+        return HttpResponseForbidden()
+    
     category = Category.objects.get(pk=id)
     if request.method == 'POST':
         form = CategoryForm(request.POST, instance=category)
@@ -247,7 +274,12 @@ def category_update(request, id):
         })
         return JsonResponse({'html_form': html_form})
 
+@login_required
 def category_delete(request, id):
+    if not request.user.groups.filter(name='Writer').exists():
+        messages.error(request, 'No tienes permiso para eliminar categorías.')
+        return HttpResponseForbidden()
+    
     category = Category.objects.get(id=id)
     category.delete()
     return JsonResponse({'success': True})

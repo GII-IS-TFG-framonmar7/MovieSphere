@@ -25,9 +25,11 @@
                     <div style="position: relative; padding-top: 56.25%;">
                         <img src="{{ actor.principalImage.url }}" class="card-img-top" alt="{{ actor.name }}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;">
                     </div>
-                    <div class="card-body text-center d-flex flex-column justify-content-center align-items-center">
-                        <h5 class="card-title">{{ actor.name }}</h5>
-                        <a href="{% url 'actor_detail' actor_id=actor.id %}" class="btn btn-primary">Más información</a>
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title text-center">{{ actor.name }}</h5>
+                        <div class="mt-auto d-flex justify-content-center">
+                            <a href="{% url 'actor_detail' actor_id=actor.id %}" class="btn btn-primary rounded">Más información</a>
+                        </div>
                     </div>
                 </div>
             </div>
