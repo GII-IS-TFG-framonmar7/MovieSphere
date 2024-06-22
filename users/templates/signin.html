@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block content %}
+
+<div class="container mt-5">
+    {% if messages %} {% for message in messages %}
+    <div
+        class="alert alert-{{ message.tags }} alert-dismissible fade show"
+        role="alert"
+    >
+        {{ message }}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    {% endfor %} {% endif %}
+    <div class="row justify-content-center">
+        <div class="col-lg-4 col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header text-center">
+                    <h4 class="mb-0">Inicio de sesión</h4>
+                </div>
+                <div class="card-body">
+                    {% if error %}
+                        <div class="alert alert-danger" role="alert">
+                            {{ error }}
+                        </div>
+                    {% endif %}
+                    <form action="{% url 'signin' %}" method="POST">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            {{ form.username }}
+                        </div>
+                        <div class="mb-3">
+                            {{ form.password }}
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-block">
+                                Iniciar sesión
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <p class="text-center mt-3">
+                ¿Aún no tienes una cuenta? <a href="{% url 'signup' %}">Regístrate</a>
+            </p>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+      $(".alert")
+        .fadeTo(2000, 500)
+        .slideUp(500, function () {
+          $(".alert").slideUp(500);
+        });
+    });
+</script>
+
+{% endblock %}

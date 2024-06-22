@@ -19,14 +19,55 @@ from django.urls import path
 from movies import views
 from django.conf import settings
 from django.conf.urls.static import static
+from django.contrib.auth import views as auth_views
+from django.contrib.messages.views import SuccessMessageMixin
+from users.views import edit_profile, signin, signup, signout, change_password, about_us
+from movies.views import movies, movie_detail, create_review, update_review, delete_review, movie_reviews, view_draft_reviews, actors, actor_detail
+from news.views import news, new_detail, create_new, update_new, delete_new, view_draft_news, load_category_data, category_create, category_update, category_delete
+
+class MyPasswordChangeView(SuccessMessageMixin, auth_views.PasswordChangeView):
+    template_name = 'change_password.html'
+    success_url = '/'
+    success_message = "Your password was successfully updated!"
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.home, name='home'),
-    path('signup/', views.signup, name='signup'),
-    path('movies/', views.movies, name='movies'),
-    path('logout/', views.signout, name='logout'),
-    path('signin/', views.signin, name='signin')
+
+    path('edit-profile/', edit_profile, name='edit_profile'),
+    path('change-password/', auth_views.PasswordChangeView.as_view(), name='password_change'),
+    path('change-password/done/', change_password, name='password_change_done'),
+    path('signin/', signin, name='signin'),
+    path('signup/', signup, name='signup'),
+    path('logout/', signout, name='logout'),
+    path('about_us', about_us, name="about_us"),
+
+    path('movies/', movies, name='movies'),
+    path('movies/<int:movie_id>/', movie_detail, name='movie_detail'),
+    path('movies/<int:movie_id>/review/draft/', create_review, {'is_draft': True}, name='save_draft'),
+    path('movies/<int:movie_id>/review/publish/', create_review, name='publish_review'),
+    path('review/<int:review_id>/delete/', delete_review, name='delete_review'),
+    path('review/<int:review_id>/update/draft/', update_review, {'is_draft': True}, name='update_draft_review'),
+    path('review/<int:review_id>/update/publish/', update_review, name='update_publish_review'),
+    path('movies/<int:movie_id>/reviews/', movie_reviews, name='movie_reviews'),
+    path('reviews/drafts/', view_draft_reviews, name='draft_reviews'),
+
+    path('actors/', actors, name='actors'),
+    path('actors/<int:actor_id>/', actor_detail, name='actor_detail'),
+
+    path('news/', news, name='news'),
+    path('news/<int:new_id>/', new_detail, name='new_detail'),
+    path('news/draft/', create_new, {'is_draft': True}, name='draft_new'),
+    path('news/publish/', create_new, name='publish_new'),
+    path('new/<int:new_id>/delete/', delete_new, name='delete_new'),
+    path('new/<int:new_id>/update/draft/', update_new, {'is_draft': True}, name='update_draft_new'),
+    path('new/<int:new_id>/update/publish/', update_new, name='update_publish_new'),
+    path('news/drafts/', view_draft_news, name='draft_news'),
+
+    path('categories/', load_category_data, name='category_load'),
+    path('category/create/', category_create, name='category_create'),
+    path('category/update/<int:id>/', category_update, name='category_update'),
+    path('category/delete/<int:id>/', category_delete, name='category_delete')
 ]
 
 if settings.DEBUG:

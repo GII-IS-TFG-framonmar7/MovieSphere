@@ -1,0 +1,297 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container p-4 bg-light">
+    <form method="get" action=".">
+        <div class="align-items-center row mb-5">
+            {% if user_is_writer %}
+            <div class="col-sm">
+              <button type="button" class="btn btn-info" data-toggle="modal" data-target="#categoryModal">
+                Gestionar Categorías
+              </button>
+            </div>
+            {% endif %}
+            <div class="col-sm">
+                <label for="category" class="form-label"><i class="bi bi-filter"></i> Categoría:</label>
+                <select class="form-select shadow-sm rounded" name="category" id="category">
+                    <option value="none">Todos</option>
+                    {% for category in categories %}
+                        <option value="{{ category.name }}" {% if category.name == request.GET.category %} selected {% endif %}>{{ category.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-sm">
+                <input type="text" class="form-control shadow-sm rounded" id="title" name="title" placeholder="Título de la noticia" value="{{ request.GET.title|default_if_none:'' }}">
+            </div>
+            {% if user_is_writer %}
+            <div class="col-sm">
+                <button
+                type="button"
+                class="btn btn-outline-primary"
+                data-toggle="modal"
+                data-target="#modalWriteNew"
+                >
+                Escribir noticia
+                </button>
+            </div>
+            {% endif %}
+        </div>
+    </form>
+    {% if messages %} {% for message in messages %}
+    <div
+        class="alert alert-{{ message.tags }} alert-dismissible fade show"
+        role="alert"
+    >
+        {{ message }}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    {% endfor %} {% endif %}
+
+    <div class="row" id="results">
+      {% for new in news %}
+      <div class="col-md-6 col-lg-4 mb-3">
+          <div class="card h-100 d-flex flex-column">
+              <div style="position: relative; padding-top: 56.25%;">
+                  <img src="{{ new.photo.url }}" class="card-img-top" alt="{{ new.title }}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;">
+              </div>
+              <div class="card-body d-flex flex-column">
+                  <h5 class="card-title text-center">{{ new.title }}</h5>
+                  <div class="mt-auto d-flex justify-content-center">
+                      <a href="{% url 'new_detail' new_id=new.id %}" class="btn btn-primary rounded" style="width: fit-content;">Más información</a>
+                  </div>
+              </div>
+          </div>
+      </div>
+      {% empty %}
+      <p class="text-center p-3">No se encontraron noticias.</p>
+      {% endfor %}
+  </div>
+   
+</div>
+
+<!-- Modal to write a new review -->
+<div
+  class="modal fade"
+  id="modalWriteNew"
+  tabindex="-1"
+  aria-labelledby="modalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalLabel">Escribir una nueva noticia</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Cerrar"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <form id="newForm" method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label for="newTitle" class="form-label">Título de la noticia</label>
+            <input type="text" class="form-control" id="newTitle" name="title" required>
+          </div>
+          <div class="mb-3">
+            <label for="newBody" class="form-label">Cuerpo de la noticia</label>
+            <textarea class="form-control" id="newBody" name="body" rows="5" required></textarea>
+          </div>
+          <div class="mb-3">
+            <label for="newCategory" class="form-label">Categoría</label>
+            <select class="form-select" id="newCategory" name="category" required>
+              {% for category in categories %}
+                <option value="{{ category.id }}">{{ category.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="newPhoto" class="form-label">Foto de la noticia</label>
+            <input type="file" class="form-control" id="newPhoto" name="photo" required>
+          </div>
+          <button
+            type="submit"
+            class="btn btn-primary"
+            formaction="{% url 'publish_new' %}"
+          >
+            Publicar noticia
+          </button>
+          <button
+            type="submit"
+            class="btn btn-secondary"
+            formaction="{% url 'draft_new' %}"
+          >
+            Guardar en borrador
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal for category operations -->
+<div class="modal fade" id="categoryModal" tabindex="-1" role="dialog" aria-labelledby="categoryModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="categoryModalLabel">Gestión de categorías</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>            
+          </div>
+          <div class="modal-body">
+              <!-- Dynamic content -->
+          </div>
+      </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    $(".alert")
+      .fadeTo(2000, 500)
+      .slideUp(500, function () {
+        $(".alert").slideUp(500);
+      });
+  });
+</script>
+
+<script>
+  $(document).ready(function(){
+      $('#category, #title').on('change keyup', function() {
+          var category = $('#category').val();
+          var title = $('#title').val();
+          $.ajax({
+              url: '',
+              data: {
+                  'category': category,
+                  'title': title
+              },
+              dataType: 'json',
+              success: function(data) {
+                  var newsHtml = '';
+                  if (data.news.length > 0) {
+                    $.each(data.news, function(index, newsItem) {
+                        var detailUrl = '/news/' + newsItem.id + '/';
+                        newsHtml += '<div class="col-md-6 col-lg-4 mb-3">' +
+                            '<div class="card h-100 d-flex flex-column">' +
+                                '<div style="position: relative; padding-top: 56.25%;">' +
+                                    '<img src="' + newsItem.image + '" class="card-img-top" alt="' + newsItem.title + '" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;">' +
+                                '</div>' +
+                                '<div class="card-body d-flex flex-column">' +
+                                    '<h5 class="card-title text-center">' + newsItem.title + '</h5>' +
+                                    '<div class="mt-auto d-flex justify-content-center">' +
+                                        '<a href="' + detailUrl + '" class="btn btn-primary rounded" style="width: fit-content;">Más información</a>' +
+                                    '</div>' +
+                                '</div>' +
+                            '</div>' +
+                        '</div>';
+                    });
+                  } else {
+                    newsHtml += '<div class="col-12 text-center d-flex justify-content-center align-items-center"><p>No se encontraron noticias.</p></div>';
+                  }
+                  $('#results').html(newsHtml);
+              }
+          });
+      });
+  });
+</script>
+
+<script>
+  $(function () {
+      $.ajaxSetup({
+        beforeSend: function(xhr, settings) {
+            if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+                xhr.setRequestHeader("X-CSRFToken", $('input[name="csrfmiddlewaretoken"]').val());
+            }
+        }
+    });
+
+    $('#categoryModal').on('show.bs.modal', function () {
+        $.ajax({
+            url: "{% url 'category_load' %}",
+            type: 'get',
+            dataType: 'json',
+            success: function (data) {
+                $('#categoryModal .modal-body').html(data.html);
+            }
+        });
+    });
+
+    $(document).on('click', '#add-category', function () {
+      $.ajax({
+          url: "{% url 'category_create' %}",
+          type: 'get',
+          success: function (data) {
+              $('#categoryModal .modal-body').html(data.html_form);
+              $('#categoryModal').modal('show');
+              $('#category-form').attr('action', "{% url 'category_create' %}");
+          }
+      });
+    });
+  
+    $(document).on('click', '.edit-category', function () {
+        var categoryId = $(this).data('id');
+        $.ajax({
+            url: `/category/update/${categoryId}/`, 
+            type: 'get',
+            success: function (data) {
+                $('#categoryModal .modal-body').html(data.html_form);
+                $('#categoryModal').modal('show');
+                $('#category-form').attr('action', `/category/update/${categoryId}/`);
+            }
+        });
+    });
+
+    $(document).on('click', '.delete-category', function () {
+      var id = $(this).data('id');
+      if(confirm("¿Estás seguro de que deseas eliminar esta categoría?")) {
+          $.ajax({
+              url: `/category/delete/${id}/`,
+              type: 'post',
+              data: {
+                  csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val(),
+              },
+              dataType: 'json',
+              success: function (data) {
+                  if (data.success) {
+                      $('#categoryModal').modal('hide');
+                      location.reload();
+                  }
+              }
+          });
+      }
+    });
+
+    $(document).on('submit', '#category-form', function(e) {
+      e.preventDefault();
+      var formData = $(this).serialize();
+      $.ajax({
+          type: 'POST',
+          url: $(this).attr('action'),
+          data: formData,
+          dataType: 'json',
+          success: function(data) {
+              if (data.form_is_valid) {
+                  $('#categoryModal .modal-body').html(data.html_category_list);
+                  $('#categoryModal').modal('hide');
+                  location.reload();
+              } else {
+                  $('#categoryModal .modal-body').html(data.html_form);
+                  $('#categoryModal').find('input, textarea, select').first().focus();
+                  var actionUrl = data.is_creating ? "{% url 'category_create' %}" : `/category/update/${data.category_id}/`;
+                  $('#category-form').attr('action', actionUrl);
+              }
+          }
+      });
+    });
+});
+
+</script>
+
+{% endblock %}

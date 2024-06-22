@@ -1,8 +1,113 @@
 {% extends 'base.html' %}
 
+{% load review_filters %}
+{% load i18n %}
+
 {% block content %}
 
-<h1>Home</h1>
-<p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Laborum suscipit vero alias id. Impedit labore nulla quidem tempore placeat! Consequatur veritatis et voluptas laboriosam quo minima cupiditate. Omnis animi, minus sint iure ullam unde nostrum adipisci similique, nesciunt assumenda ducimus soluta ab rerum a distinctio fugit. Voluptatem id fuga quia nihil non provident laborum quibusdam! Molestias eaque sint veritatis sunt, ex dolores ut debitis repellat necessitatibus accusantium eligendi? Quo iure sunt, quos, animi voluptatum dolores dicta eius illo magni mollitia a. Dolor a iure optio, mollitia sed excepturi. Explicabo laboriosam ab velit quos cum autem totam et accusamus, laborum dicta.</p>
+<div class="container p-4 bg-light">
+  {% if messages %} {% for message in messages %}
+  <div
+    class="alert alert-{{ message.tags }} alert-dismissible fade show"
+    role="alert"
+  >
+    {{ message }}
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      $(".alert")
+        .fadeTo(2000, 500)
+        .slideUp(500, function () {
+          $(".alert").slideUp(500);
+        });
+    });
+  </script>
+  {% endfor %} {% endif %}
+  <!-- Carousel Section -->
+  <div id="carouselExample" class="carousel slide mb-4" data-ride="carousel">
+    <div class="carousel-inner">
+      {% for image in carousel_images %}
+      <div class="carousel-item {% if forloop.first %}active{% endif %}">
+        <div class="embed-responsive embed-responsive-16by9">
+          <img
+            src="{{ image.url.url }}"
+            class="d-block w-100 embed-responsive-item"
+            alt="Image {{ forloop.counter }}"
+          />
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    <a
+      class="carousel-control-prev"
+      href="#carouselExample"
+      role="button"
+      data-slide="prev"
+    >
+      <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+      <span class="sr-only">Previous</span>
+    </a>
+    <a
+      class="carousel-control-next"
+      href="#carouselExample"
+      role="button"
+      data-slide="next"
+    >
+      <span class="carousel-control-next-icon" aria-hidden="true"></span>
+      <span class="sr-only">Next</span>
+    </a>
+  </div>
+
+  <!-- Latest New Section -->
+  <div class="row">
+    <div class="col-md-8 text-center">
+        {% if latest_new %}
+            <div class="col-md-10 mb-3 mx-auto">
+                <div class="card h-100 shadow hover-animate">
+                  <div style="position: relative; padding-top: 56.25%;">
+                    <img src="{{ latest_new.photo.url }}" class="card-img-top" alt="{{ latest_new.title }}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;">
+                  </div>
+                  <div class="card-body text-center">
+                    <h5 class="card-title">{{ latest_new.title }}</h5>
+                    <div class="d-flex justify-content-end">
+                      <a href="{% url 'new_detail' new_id=latest_new.id %}" class="btn btn-primary rounded">Más información</a>
+                    </div>
+                  </div>
+                </div>
+            </div>
+        {% else %}
+            {% trans "No hay noticias disponibles." %}
+        {% endif %}
+    </div>
+
+    <!-- Latest Reviews Section -->
+    <div class="col-md-4">
+      <div class="row">
+        {% for review in latest_reviews %}
+          <div class="card h-100 mb-3 w-100 mr-3">
+            <div class="card-body d-flex flex-column text-center">
+              <h5 class="card-title">
+                  {{ review.movie.title }}
+              </h5>
+              <p class="card-text">
+                <small class="text-muted"
+                  >Hace {{ review.publicationDate|timesince }}</small
+                >
+              </p>
+              <p class="card-text">
+                  {{ review.rating|times:"★" }}{{ 5|sub:review.rating|times:"☆" }}
+              </p>
+              <p class="card-text">{{ review.body }}</p>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
 
 {% endblock %}

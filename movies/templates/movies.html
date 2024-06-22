@@ -2,7 +2,93 @@
 
 {% block content %}
 
-<h1>Movies</h1>
-<p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Laborum suscipit vero alias id. Impedit labore nulla quidem tempore placeat! Consequatur veritatis et voluptas laboriosam quo minima cupiditate. Omnis animi, minus sint iure ullam unde nostrum adipisci similique, nesciunt assumenda ducimus soluta ab rerum a distinctio fugit. Voluptatem id fuga quia nihil non provident laborum quibusdam! Molestias eaque sint veritatis sunt, ex dolores ut debitis repellat necessitatibus accusantium eligendi? Quo iure sunt, quos, animi voluptatum dolores dicta eius illo magni mollitia a. Dolor a iure optio, mollitia sed excepturi. Explicabo laboriosam ab velit quos cum autem totam et accusamus, laborum dicta.</p>
+<div class="container p-4 bg-light">
+    <form method="get" action=".">
+        <div class="d-flex align-items-center row mb-5">
+            <div class="col-sm">
+                <label for="genre" class="form-label"><i class="bi bi-filter"></i> Género:</label>
+                <select class="form-select shadow-sm rounded" name="genre" id="genre">
+                    <option value="none">Todos</option>
+                    {% for genre in genres %}
+                    <option value="{{ genre.name }}" {% if genre.name == request.GET.genre %} selected {% endif %}>{{ genre.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-sm">
+                <input type="text" class="form-control" id="title" name="title" placeholder="Título de la película" value="{{ request.GET.title|default_if_none:'' }}">
+            </div>
+            <div class="col-sm">
+                <input type="text" class="form-control" id="director" name="director" placeholder="Nombre del director" value="{{ request.GET.director|default_if_none:'' }}">
+            </div>
+            <div class="col-sm">
+                <input type="text" class="form-control" id="actor" name="actor" placeholder="Nombre del actor" value="{{ request.GET.actor|default_if_none:'' }}">
+            </div>
+        </div>
+    </form>
+    <div class="row" id="results">
+        {% for movie in movies %}
+        <div class="col-md-6 col-lg-4 mb-3">
+            <div class="card h-100 d-flex flex-column">
+                <div style="position: relative; padding-top: 100%;">
+                  <img src="{{ movie.image.url }}" class="card-img-top" alt="{{ movie.title }}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;">
+                </div>
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title text-center">{{ movie.title }}</h5>
+                    <div class="mt-auto d-flex justify-content-center">
+                      <a href="{% url 'movie_detail' movie_id=movie.id %}" class="btn btn-primary rounded">Más información</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <p>No se encontraron películas.</p>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    $(document).ready(function(){
+      $('#genre, #title, #director, #actor').on('change keyup', function() {
+        var genre = $('#genre').val();
+        var title = $('#title').val();
+        var director = $('#director').val();
+        var actor = $('#actor').val();
+        $.ajax({
+            url: '',
+            data: {
+              'genre': $('#genre').val(),
+              'title': $('#title').val(),
+              'director': $('#director').val(),
+              'actor': $('#actor').val(),
+            },
+            dataType: 'json',
+            success: function(data) {
+                var moviesHtml = '';
+                if (data.movies.length > 0) {
+                  $.each(data.movies, function(index, movie) {
+                    var detailUrl = '/movies/' + movie.id + '/';
+                    moviesHtml += '<div class="col-md-6 col-lg-4 mb-3">' +
+                '<div class="card h-100 d-flex flex-column">' +
+                  '<div style="position: relative; padding-top: 100%;">' +
+                    '<img src="' + movie.image_url + '" class="card-img-top" alt="' + movie.title + '" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;">' +
+                  '</div>' +
+                  '<div class="card-body d-flex flex-column">' +
+                    '<h5 class="card-title text-center">' + movie.title + '</h5>' +
+                    '<div class="mt-auto d-flex justify-content-center">' +
+                      '<a href="' + detailUrl + '" class="btn btn-primary rounded">Más información</a>' +
+                    '</div>' +
+                  '</div>' +
+                '</div>' +
+              '</div>';
+                  });
+                } else {
+                  moviesHtml += '<div class="col-12 text-center d-flex justify-content-center align-items-center"><p>No se encontraron películas.</p></div>';
+                }
+                $('#results').html(moviesHtml);
+              }
+          });
+      });
+    });
+</script>
 
 {% endblock %}

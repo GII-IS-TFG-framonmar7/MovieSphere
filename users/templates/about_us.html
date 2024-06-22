@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block content %}
+
+<div class="container p-4 bg-light">
+  <div class="row">
+    <div class="col-lg-9 mx-auto">
+      <h1 class="mb-4 text-center">Sobre Nosotros</h1>
+      <img src="{% static 'logo.png' %}" alt="Nuestro Equipo" class="img-fluid rounded mb-4">
+      <p class="text-justify">
+        <strong>MovieSphere</strong> es un trabajo de fin de grado enfocado en explorar el uso de la inteligencia artificial (IA) en el contexto del desarrollo web. Para ello, se ha construido una aplicación cinematográfica que sirve como escaparate para funcionalidades inteligentes.
+      </p>
+      <h3>Nuestro Equipo</h3>
+      <p>
+        Este proyecto es llevado a cabo por <strong>Francisco Jesús Montero Martínez</strong>, estudiante de ingeniería informática, bajo la tutoría de <strong>José Antonio Parejo Maestre</strong>.
+      </p>
+      <h3>Nuestra Misión</h3>
+      <p>
+        Nuestra misión es investigar, desarrollar e implementar técnicas que mejoren la interacción y el contenido en sitios web. Creemos que la inteligencia artificial representa un horizonte expansivo de oportunidades y desafíos para la industria del software.
+      </p>
+      <h3>Contacto</h3>
+      <p>
+        Para más información, preguntas o sugerencias, no dudes en contactarnos. Estamos aquí para ayudarte y escuchar tus opiniones.
+      </p>
+      <p>
+        <strong>Correo de contacto:</strong> <a href="mailto:movie.sphere.communications@gmail.com">movie.sphere.communications@gmail.com</a>
+      </p>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
