@@ -1,7 +1,7 @@
 <form id="category-form" method="post">
     {% csrf_token %}
     <div class="modal-header">
-        <h5 class="modal-title">{{ is_creating|yesno:"Crear Categoría,Editar Categoría" }}</h5>
+        <h5 class="modal-title">{{ is_creating|yesno:"Crear categoría,Editar categoría" }}</h5>
     </div>
     <div class="modal-body">
         {{ form.as_p }}
