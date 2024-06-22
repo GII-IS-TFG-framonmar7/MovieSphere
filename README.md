@@ -42,14 +42,14 @@ Se recomienda crear un entorno virtual para aislar las dependencias de la aplica
 
 ### Paso 3: Instalar las Dependencias
 
-Con el entorno virtual activado (si se utiliza), instale las dependencias requeridas por la aplicación ejecutando:
+- Con el entorno virtual activado (si se utiliza), instale las dependencias requeridas por la aplicación ejecutando:
     ```sh
     pip install -r requirements.txt
     ```
 
 ### Paso 4: Crear Archivo .env en el Directorio Principal
 
-En el directorio principal del proyecto (`moviesphere`), cree un archivo `.env` con el siguiente contenido:
+- En el directorio principal del proyecto (`moviesphere`), cree un archivo `.env` con el siguiente contenido:
     ```env
     EMAIL_HOST_USER=movie.sphere.communications@gmail.com
     EMAIL_HOST_PASSWORD=MOVIESPHERE_PASSWORD
@@ -57,7 +57,7 @@ En el directorio principal del proyecto (`moviesphere`), cree un archivo `.env` 
 
 ### Paso 5: Migrar la Base de Datos
 
-Ejecute las migraciones de la base de datos para crear las tablas necesarias:
+- Ejecute las migraciones de la base de datos para crear las tablas necesarias:
     ```sh
     python manage.py makemigrations
     python manage.py migrate
@@ -65,21 +65,21 @@ Ejecute las migraciones de la base de datos para crear las tablas necesarias:
 
 ### Paso 6: Descargar Pesos del Modelo YOLO
 
-Descargue los pesos del modelo YOLO ejecutando el siguiente comando:
+- Descargue los pesos del modelo YOLO ejecutando el siguiente comando:
     ```sh
     python manage.py get_weights
     ```
 
 ### Paso 7: Poblar la Base de Datos
 
-Ejecute el script de inicialización para poblar la base de datos con los datos iniciales:
+- Ejecute el script de inicialización para poblar la base de datos con los datos iniciales:
     ```sh
     python manage.py initial_data
     ```
 
 ### Paso 8: Ejecutar el Servidor de Desarrollo
 
-Finalmente, ejecute el servidor de desarrollo de Django:
+- Finalmente, ejecute el servidor de desarrollo de Django:
     ```sh
     python manage.py runserver
     ```
