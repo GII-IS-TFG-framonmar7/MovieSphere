@@ -14,8 +14,8 @@ def home(request):
     Review = apps.get_model('movies', 'Review')
     HomeImage = apps.get_model('movies', 'HomeImage')
     
-    new_queryset = New.objects.filter().order_by('-publicationDate').distinct()[:1]
-    reviews_queryset = Review.objects.filter().order_by('-publicationDate').distinct()[:2]
+    new_queryset = New.objects.filter(state=Review.State.PUBLISHED).order_by('-publicationDate').distinct()[:1]
+    reviews_queryset = Review.objects.filter(state=Review.State.PUBLISHED).order_by('-publicationDate').distinct()[:2]
     images_queryset = HomeImage.objects.filter(isVisible=True)
 
     latest_new = new_queryset.first() if new_queryset else None

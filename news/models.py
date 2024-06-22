@@ -60,8 +60,6 @@ class New(models.Model):
 
         if should_create_strike and not strike_exists:
             Strike.objects.create(new=self, user=self.author)
-        elif should_create_strike and strike_exists:
-            raise ValidationError("This new already has an associated strike and cannot generate another.")
 
     def __str__(self):
         return self.title

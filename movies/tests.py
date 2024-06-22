@@ -4,7 +4,7 @@ from django.urls import reverse
 from django.contrib.auth.models import User
 from django.apps import apps
 from djmoney.money import Money
-from movies.models import Review, HomeImage, Movie, Genre, Actor, Gender, Performance, Emotion
+from movies.models import Review, HomeImage, Movie, Genre, Actor, Gender, Performance
 from movies.utils import (
     check_files_exist,
     detect_faces,
@@ -48,13 +48,15 @@ class HomeViewTest(TestCase):
             movie=self.movie, 
             user=self.user, 
             body="Review 1", 
+            state=Review.State.PUBLISHED,
             rating=5, 
             publicationDate="2023-01-01"
         )
         self.review2 = Review.objects.create(
             movie=self.movie, 
             user=self.user, 
-            body="Review 2", 
+            body="Review 2",
+            state=Review.State.PUBLISHED,
             rating=4, 
             publicationDate="2023-01-02"
         )
